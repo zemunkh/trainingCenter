@@ -57,6 +57,18 @@ export const constantRoutes = [
     // }
   },
   {
+    path: '/customers',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'Customers',
+        component: () => import('@/views/customers/index'),
+        meta: { title: 'Үйлчлүүлэгчид', icon: 'users' }
+      }
+    ]
+  },
+  {
     path: '/court',
     component: Layout,
     children: [
@@ -125,6 +137,18 @@ export const constantRoutes = [
         name: 'Register',
         component: () => import('@/views/register/index'),
         meta: { title: 'Бүртгэл', icon: 'form' }
+      }
+    ]
+  },
+  {
+    path: '/add',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        name: 'Add',
+        component: () => import('@/views/add/index'),
+        meta: { title: 'Шинээр бүртгэх', icon: 'new' }
       }
     ]
   },

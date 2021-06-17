@@ -1,7 +1,48 @@
 <template>
   <div class="app-container">
-    <h3>Бүртгэл</h3>
+    <h3>Шинэ үйлчлүүлэгч бүртгэх</h3>
     <el-form ref="userInfo" :model="userInfo" label-width="120px">
+      <el-row>
+        <el-col :span="12">
+          <div class="grid-content bg-purple">
+            <el-form-item
+              prop="passportNumber"
+              label="Регистер"
+              :rules="rules.passportNumber"
+            >
+              <el-select v-model="userInfo.passportId.letter1" placeholder="А" style="width:20%;">
+                <el-option
+                  v-for="item in letters"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+              <el-select v-model="userInfo.passportId.letter2" placeholder="Б" style="width:20%;">
+                <el-option
+                  v-for="item in letters"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+              <el-input v-model="userInfo.passportNumber" placeholder="9121200" style="width:60%;" />
+            </el-form-item>
+          </div>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="Харъяа алба">
+            <el-select v-model="userInfo.department" placeholder="Аль салбар нэгж алба" style="width:100%;">
+              <el-option
+                v-for="item in optionsDepartment"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
       <el-row>
         <el-col :span="12">
           <div class="grid-content bg-purple">
@@ -15,10 +56,14 @@
           </div>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="Харъяа алба">
-            <el-select v-model="userInfo.department" placeholder="Аль салбар нэгж алба" style="width:100%;">
+          <el-form-item label="Албан тушаал">
+            <el-select
+              v-model="userInfo.jobTitle"
+              placeholder="Ямар тушаал"
+              style="width:100%;"
+            >
               <el-option
-                v-for="item in optionsDepartment"
+                v-for="item in optionsJobTitle"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
@@ -38,14 +83,13 @@
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="Албан тушаал">
+          <el-form-item label="Хүйс">
             <el-select
-              v-model="userInfo.jobTitle"
-              placeholder="Ямар тушаал"
-              style="width:100%;"
+              v-model="userInfo.gender"
+              placeholder="Хүйс"
             >
               <el-option
-                v-for="item in optionsJobTitle"
+                v-for="item in optionsGender"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
@@ -70,18 +114,12 @@
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="Хүйс">
-            <el-select
-              v-model="userInfo.gender"
-              placeholder="Хүйс"
-            >
-              <el-option
-                v-for="item in optionsGender"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
+          <el-form-item
+            prop="email"
+            label="Имейл"
+            :rules="rules.email"
+          >
+            <el-input v-model="userInfo.email" placeholder="mail@mcaa.gov.mn" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -102,22 +140,6 @@
         </el-col>
         <el-col :span="12">
           <el-form-item
-            prop="email"
-            label="Имейл"
-            :rules="rules.email"
-          >
-            <el-input v-model="userInfo.email" placeholder="mail@mcaa.gov.mn" />
-          </el-form-item>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="Шинжилгээ дуусах огноо">
-            <el-date-picker v-model="userInfo.expiryDate" type="date" placeholder="Мэдээг оруулах" style="width: 100%;" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item
             prop="phoneNumber"
             label="Утас"
             :rules="rules.phoneNumber"
@@ -126,18 +148,8 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <h2>СПОРТЫН ТАНХИМ</h2>
       <el-row>
-        <el-col :span="15">
-          <el-checkbox-group v-model="userInfo.fields">
-            <el-checkbox label="Спорт заал" />
-            <el-checkbox label="Бассейн" />
-            <el-checkbox label="Иога" />
-            <el-checkbox label="Фитнесс" />
-            <el-checkbox label="Туслах танхим" />
-          </el-checkbox-group>
-        </el-col>
-        <el-col :span="5">
+        <el-col :span="24">
           <el-button :loading="loading" type="primary" style="width: 100%;" @click="onSubmit('userInfo')">Бүртгэх</el-button>
         </el-col>
       </el-row>
@@ -148,6 +160,7 @@
 <script>
 
 import { createCustomer } from '@/api/user'
+import letters from '@/assets/static/letters.json'
 const today = new Date()
 
 export default {
@@ -156,8 +169,13 @@ export default {
       userInfo: {
         lastname: '',
         firstname: '',
+        passportId: {
+          letter1: 'А',
+          letter2: 'А'
+        },
+        passportNumber: '',
         birthdate: new Date('January 1, 2002'),
-        gender: 'Эрэгтэй',
+        gender: 'male',
         department: 3,
         jobTitle: 3,
         phoneNumber: null,
@@ -185,6 +203,13 @@ export default {
         phoneNumber: [
           { required: true, message: 'Утасны дугаар оруулна уу!', trigger: 'blur' },
           { min: 8, message: 'Хэт богино байна!', trigger: ['blur', 'change'] },
+          { max: 8, message: 'Урт байна!', trigger: ['blur', 'change'] },
+          { pattern: /^[0-9 -_]{1,11}$/, message: 'Зөвхөн тоо байна!', trigger: ['blur', 'change'] }
+        ],
+        passportNumber: [
+          { required: true, message: 'Регистерийн дугаар оруулна уу!', trigger: 'blur' },
+          { min: 8, message: 'Дутуу байна!', trigger: ['blur', 'change'] },
+          { max: 8, message: 'Урт байна!', trigger: ['blur', 'change'] },
           { pattern: /^[0-9 -_]{1,11}$/, message: 'Зөвхөн тоо байна!', trigger: ['blur', 'change'] }
         ],
         testedDate: [
@@ -259,13 +284,14 @@ export default {
       optionsGender: [
         {
           value: 'male',
-          label: 'Эмэгтэй'
+          label: 'Эрэгтэй'
         },
         {
           value: 'female',
-          label: 'Эрэгтэй'
+          label: 'Эмэгтэй'
         }
-      ]
+      ],
+      letters: letters
     }
   },
   methods: {
@@ -273,11 +299,13 @@ export default {
       this.$refs[userInfo].validate((valid) => {
         if (valid) {
           this.loading = true
+          const customerId = `${this.userInfo.passportId.letter1 + this.userInfo.passportId.letter2 + this.userInfo.passportNumber.trim()}`
           this.$message('Хадгалж болно!')
           return new Promise((resolve, reject) => {
             createCustomer({
               firstname: this.userInfo.firstname.trim(),
               lastname: this.userInfo.lastname.trim(),
+              customerId: customerId,
               gender: this.userInfo.gender,
               email: this.userInfo.email.trim(),
               birthdate: this.userInfo.birthdate,
@@ -303,6 +331,7 @@ export default {
             })
           })
         } else {
+          console.log('Passportid: ', `${this.userInfo.passportId.letter1 + this.userInfo.passportId.letter2 + this.userInfo.passportNumber}`)
           console.log('Validation fail')
           this.$message('Буруу эсвэл дутуу мэдээлэл оруулсан байна!')
           return false
