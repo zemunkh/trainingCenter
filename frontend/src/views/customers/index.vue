@@ -1,14 +1,6 @@
 <template>
   <div class="app-container">
-    <h2>СПОРТЫН ТАНХИМ</h2>
-    <el-row>
-      <el-col :span="20">
-        <el-input v-model="firstname" placeholder="Нэрээр хайх" style="width:100%;" />
-      </el-col>
-      <el-col :span="4">
-        <el-button :loading="loading" type="primary" style="width:100%; margin-bottom:30px;" @click.native.prevent="handleSearch">Нэвтрэх</el-button>
-      </el-col>
-    </el-row>
+    <h2>Нийт үйлчлүүлэгчид</h2>
     <el-row>
       <el-col :span="24">
         <el-table
@@ -62,21 +54,11 @@
         </el-table>
       </el-col>
     </el-row>
-
-    <el-dialog title="Хайлтын үр дүн" :visible.sync="isVisible">
-      <p>{{ result }}</p>
-      <!-- <el-table :data="result">
-        <el-table-column property="date" label="Date" width="150"></el-table-column>
-        <el-table-column property="name" label="Name" width="200"></el-table-column>
-        <el-table-column property="address" label="Address"></el-table-column>
-      </el-table> -->
-    </el-dialog>
   </div>
 </template>
 
 <script>
 
-// import { fetchCustomersList } from '@/api/user'
 import axios from 'axios'
 import moment from 'moment'
 
@@ -94,11 +76,7 @@ export default {
   data() {
     return {
       list: null,
-      loading: false,
-      firstname: '',
-      result: null,
-      listLoading: true,
-      isVisible: false
+      listLoading: true
     }
   },
   created() {
@@ -106,61 +84,17 @@ export default {
   },
   methods: {
     fetchCustomers() {
-      console.log('Fetching.......')
       this.listLoading = true
-      axios.get('http://localhost:3000/api/customers').then(
+      axios.get('/api/customers').then(
         response => {
           this.list = response.data.data
           this.listLoading = false
-          console.log('List: ', response.data.data)
         }).catch(error => {
         console.log('Error: ', error)
         this.listLoading = false
       })
-      // fetchCustomersList(response => {
-      //   this.list = response.data
-      //   this.listLoading = false
-      //   console.log('List: ', response.data)
-      // }).catch(error => {
-      //   console.log('Error: ', error)
-      //   this.listLoading = false
-      // })
-      // Fetch  all the customers to show on table
     },
-    handleSearch(e) {
-      e.preventDefault()
-      if (this.firstname.length > 0) {
-        this.loading = true
-        axios.get('/imcaa', {
-          header: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Access-Control-Allow-Origin': '*'
-          },
-          params: {
-            firstname: this.firstname,
-            code: 'pass_code'
-          }
-        }).then(
-          response => {
-            this.isVisible = true
-            this.result = response.data
-            console.log('Result: ', response.data)
-            this.loading = false
-          }).catch(error => {
-          console.log('Error: ', error)
-        this.$message({
-          message: 'Алдаатай хүсэлт',
-          type: 'warning'
-        })
-          this.loading = false
-        })
-      } else {
-        this.$message({
-          message: 'Хэт богино байна',
-          type: 'warning'
-        })
-      }
-    },
+
     onCancel() {
       this.$message({
         message: 'cancel!',

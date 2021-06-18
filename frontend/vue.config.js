@@ -34,12 +34,9 @@ module.exports = {
       '/api': {
         target: 'http://localhost:3000/'
       },
-      "/userapi": {
+      '/userapi': {
         target: 'http://localhost:3000/',
         pathRewrite: {'^/userapi' : '/api'}
-      },
-      'https://digital.mcaa.gov.mn/json/index': {
-        target: 'https://digital.mcaa.gov.mn/json/index'
       }
     }
   },

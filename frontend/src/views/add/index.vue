@@ -1,6 +1,16 @@
 <template>
   <div class="app-container">
     <h3>Шинэ үйлчлүүлэгч бүртгэх</h3>
+
+    <el-row>
+      <el-col :span="20">
+        <el-input v-model="firstname" placeholder="Нэрээр хайх" style="width:100%;" />
+      </el-col>
+      <el-col :span="4">
+        <el-button :loading="loading" type="primary" style="width:100%; margin-bottom:30px;" @click.native.prevent="handleSearch">Хайх</el-button>
+      </el-col>
+    </el-row>
+
     <el-form ref="userInfo" :model="userInfo" label-width="120px">
       <el-row>
         <el-col :span="12">
@@ -154,13 +164,58 @@
         </el-col>
       </el-row>
     </el-form>
+
+    <el-dialog title="Хайлтын үр дүн" :visible.sync="isVisible" width="80%">
+      <el-table :data="result">
+        <el-table-column
+          prop="lastname"
+          label="Овог"
+          width="150"
+        />
+        <el-table-column
+          prop="firstname"
+          label="Нэр"
+          width="150"
+        />
+        <el-table-column
+          prop="department"
+          label="Алба"
+          width="200"
+        />
+        <el-table-column
+          prop="position"
+          label="Мэргэжил"
+          width="200"
+        />
+        <el-table-column
+          prop="phone"
+          label="Утасны дугаар"
+          width="200"
+        />
+        <el-table-column
+          label="Үйлдэл"
+        >
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              type="success"
+              @click="chooseRow(scope.$index, scope.row)"
+            >Сонгох
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
 
-import { createCustomer } from '@/api/user'
+import { createCustomer, searchCustomers } from '@/api/user'
 import letters from '@/assets/static/letters.json'
+import departments from '@/assets/static/departments.json'
+import jobTitles from '@/assets/static/jobTitles.json'
 const today = new Date()
 
 export default {
@@ -184,8 +239,11 @@ export default {
         expiryDate: today.setMonth(today.getMonth() + 3),
         fields: []
       },
-      isValid: true,
       loading: false,
+      firstname: 'Мөнх-Эрдэнэ',
+      result: null,
+      isValid: true,
+      isVisible: false,
       rules: {
         name: [
           { required: true, message: 'Хүний нэр оруулна уу!', trigger: 'blur' },
@@ -217,70 +275,8 @@ export default {
           { type: 'date', message: 'Зөвхөн огноо байх ёстой!', trigger: ['blur', 'change'] }
         ]
       },
-      optionsDepartment: [
-        {
-          value: 1,
-          label: 'ХНАА'
-        },
-        {
-          value: 2,
-          label: 'НМҮА'
-        },
-        {
-          value: 3,
-          label: 'НХҮА'
-        },
-        {
-          value: 4,
-          label: 'НБУГ'
-        },
-        {
-          value: 5,
-          label: 'НТИА'
-        },
-        {
-          value: 6,
-          label: 'ИНЕГ'
-        },
-        {
-          value: 7,
-          label: 'АНУГ'
-        }
-      ],
-      optionsJobTitle: [
-        {
-          value: 1,
-          label: 'Инженер'
-        },
-        {
-          value: 2,
-          label: 'Жолооч'
-        },
-        {
-          value: 3,
-          label: 'Нислэгийн Удирдагч'
-        },
-        {
-          value: 4,
-          label: 'АБХА'
-        },
-        {
-          value: 5,
-          label: 'Менежер'
-        },
-        {
-          value: 6,
-          label: 'Нягтлан бодогч'
-        },
-        {
-          value: 7,
-          label: 'Програмист'
-        },
-        {
-          value: 8,
-          label: 'Оператор'
-        }
-      ],
+      optionsDepartment: departments,
+      optionsJobTitle: jobTitles,
       optionsGender: [
         {
           value: 'male',
@@ -295,6 +291,44 @@ export default {
     }
   },
   methods: {
+    handleSearch(e) {
+      e.preventDefault()
+      if (this.firstname.length > 0) {
+        this.loading = true
+        searchCustomers({
+          firstname: this.firstname
+        }).then(response => {
+          this.result = response.results
+          console.log('Result: ', response.results[0].firstname)
+          this.isVisible = true
+          this.loading = false
+        }).catch(error => {
+          console.log('Error: ', error)
+          this.$message({
+            message: 'Алдаатай хүсэлт',
+            type: 'warning'
+          })
+          this.loading = false
+        })
+      } else {
+        this.$message({
+          message: 'Хэт богино байна',
+          type: 'warning'
+        })
+      }
+    },
+    chooseRow(index, row) {
+      console.log('Chosen row: ', row.firstname)
+      this.userInfo.firstname = row.firstname
+      this.userInfo.lastname = row.lastname
+      this.userInfo.gender = row.gender == 1 ? 'male' : 'female'
+      this.userInfo.phoneNumber = row.phone
+      this.userInfo.email = row.email
+      this.userInfo.passportId.letter1 = row.rd[0]
+      this.userInfo.passportId.letter2 = row.rd[1]
+      this.userInfo.passportNumber = row.rd.substring(2, 10)
+      this.isVisible = false
+    },
     onSubmit(userInfo) {
       this.$refs[userInfo].validate((valid) => {
         if (valid) {

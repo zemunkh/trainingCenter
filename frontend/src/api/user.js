@@ -1,4 +1,4 @@
-import axios from 'axios'
+// import axios from 'axios'
 
 export async function login(data) {
   const response = await fetch(`/api/login`, {
@@ -42,10 +42,10 @@ export async function fetchCustomerById(data) {
   return await response.json()
 }
 
-export function fetchCustomersList() {
-  const response = axios.get('/api/customers')
-  return response.data
-  // const response = fetch('/api/customers')
-  // console.log('Response: ', response)
-  // return response.json()
+export async function searchCustomers(data) {
+  const response = await fetch('/api/search?' +
+  new URLSearchParams({
+    firstname: data.firstname
+  }))
+  return await response.json()
 }
