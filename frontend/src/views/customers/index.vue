@@ -16,12 +16,12 @@
               {{ scope.$index }}
             </template>
           </el-table-column>
-          <el-table-column label="Овог" width="110" align="center">
+          <el-table-column label="Овог" width="80" align="center">
             <template slot-scope="scope">
-              {{ scope.row.lastname }}
+              {{ scope.row.lastname.length > 1 ? scope.row.lastname.substring(0, 2) : scope.row.lastname }}
             </template>
           </el-table-column>
-          <el-table-column label="Нэр" width="110" align="center">
+          <el-table-column label="Нэр" width="150" align="center">
             <template slot-scope="scope">
               {{ scope.row.firstname }}
             </template>
@@ -36,24 +36,99 @@
               {{ genderFilter(scope.row.gender) }}
             </template>
           </el-table-column>
-          <el-table-column label="Харъяа алба" width="110" align="center">
+          <el-table-column label="Харъяа алба" width="150" align="center">
             <template slot-scope="scope">
               {{ scope.row.department }}
             </template>
           </el-table-column>
-          <el-table-column label="Шинжилгээ хүчинтэй огноо" width="110" align="center">
+          <el-table-column label="Шинжилгээ хүчинтэй огноо" width="150" align="center">
             <template slot-scope="scope">
               {{ displayDate(scope.row.testedDate) }}
             </template>
           </el-table-column>
-          <el-table-column label="Утасны дугаар" width="110" align="center">
+          <el-table-column label="Утасны дугаар" width="150" align="center">
             <template slot-scope="scope">
               {{ scope.row.phoneNumber }}
+            </template>
+          </el-table-column>
+          <el-table-column label="Үйлдэл" width="150" align="center">
+            <template slot-scope="scope">
+              <el-button
+                size="mini"
+                type="success"
+                @click="chooseCustomer(scope.$index, scope.row)"
+              >Сонгох
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-col>
     </el-row>
+
+    <el-dialog title="Цаг бүртгэл" :visible.sync="isVisible" width="40%">
+      <el-form ref="timelog" :model="timelog" label-width="120px">
+        <el-row>
+          <el-col>
+            <el-form-item
+              prop="name"
+              label="Нэр"
+            >
+              <span>{{ timelog.name }}</span>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col>
+            <el-form-item
+              prop="room"
+              label="Танхим сонгох"
+            >
+              <el-select v-model="timelog.roomId" placeholder="Аль танхимд орох" style="width:100%;">
+                <el-option
+                  v-for="item in optionsRoom"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col>
+            <el-form-item
+              prop="entryTime"
+              label="Орсон цаг"
+              :rules="rules.entryTime"
+            >
+              <el-time-select
+                v-model="timelog.entryTime"
+                :picker-options="{
+                  start: '06:00',
+                  step: '01:00',
+                  end: '23:00'
+                }"
+                placeholder="Цаг сонгох"
+                style="width: 100%;"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col>
+            <el-button
+              size="mini"
+              :loading="loading"
+              type="primary"
+              style="width: 100%;"
+              @click="registerTime()"
+            >Бүртгэх
+            </el-button>
+          </el-col>
+        </el-row>
+      </el-form>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -61,6 +136,7 @@
 
 import axios from 'axios'
 import moment from 'moment'
+import rooms from '@/assets/static/rooms.json'
 
 export default {
   filters: {
@@ -75,14 +151,41 @@ export default {
   },
   data() {
     return {
+      timelog: {
+        name: '',
+        customerId: '',
+        roomId: 3,
+        entryTime: '',
+        keyId: ''
+      },
+      isActive: true,
       list: null,
-      listLoading: true
+      isVisible: false,
+      loading: false,
+      listLoading: true,
+      optionsRoom: rooms,
+      rules: {
+        entryTime: [
+          { required: true, message: 'Цагийг оруулна уу!', trigger: 'blur' }
+        ]
+      }
     }
   },
   created() {
     this.fetchCustomers()
   },
   methods: {
+    chooseCustomer(index, row) {
+      console.log('Me chosen: ', row)
+      this.timelog.customerId = row.id
+      this.timelog.name = `${row.lastname.length > 1 ? row.lastname.substring(0, 2) : row.lastname}. ${row.firstname}`
+      this.isVisible = true
+    },
+    registerTime() {
+      this.loading = true
+
+      // this.loading = false
+    },
     fetchCustomers() {
       this.listLoading = true
       axios.get('/api/customers').then(
@@ -94,7 +197,6 @@ export default {
         this.listLoading = false
       })
     },
-
     onCancel() {
       this.$message({
         message: 'cancel!',
@@ -124,6 +226,10 @@ export default {
 
 <style lang="scss">
 .line{
+  text-align: center;
+}
+.center {
+  display: block;
   text-align: center;
 }
 </style>

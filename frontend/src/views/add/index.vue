@@ -7,7 +7,7 @@
         <el-input v-model="firstname" placeholder="Нэрээр хайх" style="width:100%;" />
       </el-col>
       <el-col :span="4">
-        <el-button :loading="loading" type="primary" style="width:100%; margin-bottom:30px;" @click.native.prevent="handleSearch">Хайх</el-button>
+        <el-button :loading="loadingSearch" type="primary" style="width:100%; margin-bottom:30px;" @click.native.prevent="handleSearch">Хайх</el-button>
       </el-col>
     </el-row>
 
@@ -41,7 +41,11 @@
           </div>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="Харъяа алба">
+          <el-form-item
+            prop="department"
+            label="Харъяа алба"
+            :rules="rules.department"
+          >
             <el-select v-model="userInfo.department" placeholder="Аль салбар нэгж алба" style="width:100%;">
               <el-option
                 v-for="item in optionsDepartment"
@@ -66,8 +70,17 @@
           </div>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="Албан тушаал">
-            <el-select
+          <el-form-item
+            prop="jobTitle"
+            label="Албан тушаал"
+            :rules="rules.jobTitle"
+          >
+            <el-input
+              v-model="userInfo.jobTitle"
+              placeholder="Ямар тушаал"
+              style="width:100%;"
+            />
+            <!-- <el-select
               v-model="userInfo.jobTitle"
               placeholder="Ямар тушаал"
               style="width:100%;"
@@ -78,7 +91,7 @@
                 :label="item.label"
                 :value="item.value"
               />
-            </el-select>
+            </el-select> -->
           </el-form-item>
         </el-col>
       </el-row>
@@ -231,8 +244,8 @@ export default {
         passportNumber: '',
         birthdate: new Date('January 1, 2002'),
         gender: 'male',
-        department: 3,
-        jobTitle: 3,
+        department: null,
+        jobTitle: '',
         phoneNumber: null,
         email: '',
         testedDate: new Date(),
@@ -240,6 +253,7 @@ export default {
         fields: []
       },
       loading: false,
+      loadingSearch: false,
       firstname: 'Мөнх-Эрдэнэ',
       result: null,
       isValid: true,
@@ -273,6 +287,12 @@ export default {
         testedDate: [
           { required: true, message: 'Огноог оруулна уу!', trigger: 'blur' },
           { type: 'date', message: 'Зөвхөн огноо байх ёстой!', trigger: ['blur', 'change'] }
+        ],
+        department: [
+          { required: true, message: 'Алба нэгжийн мэдээлэл оруулна уу!', trigger: 'blur' }
+        ],
+        jobTitle: [
+          { required: true, message: 'Албан тушаалын мэдээлэл оруулна уу!', trigger: 'blur' }
         ]
       },
       optionsDepartment: departments,
@@ -294,21 +314,21 @@ export default {
     handleSearch(e) {
       e.preventDefault()
       if (this.firstname.length > 0) {
-        this.loading = true
+        this.loadingSearch = true
         searchCustomers({
           firstname: this.firstname
         }).then(response => {
           this.result = response.results
           console.log('Result: ', response.results[0].firstname)
           this.isVisible = true
-          this.loading = false
+          this.loadingSearch = false
         }).catch(error => {
           console.log('Error: ', error)
           this.$message({
             message: 'Алдаатай хүсэлт',
             type: 'warning'
           })
-          this.loading = false
+          this.loadingSearch = false
         })
       } else {
         this.$message({
@@ -321,12 +341,13 @@ export default {
       console.log('Chosen row: ', row.firstname)
       this.userInfo.firstname = row.firstname
       this.userInfo.lastname = row.lastname
-      this.userInfo.gender = row.gender == 1 ? 'male' : 'female'
+      this.userInfo.gender = row.gender === 1 ? 'male' : 'female'
       this.userInfo.phoneNumber = row.phone
       this.userInfo.email = row.email
       this.userInfo.passportId.letter1 = row.rd[0]
       this.userInfo.passportId.letter2 = row.rd[1]
       this.userInfo.passportNumber = row.rd.substring(2, 10)
+      this.userInfo.jobTitle = row.position
       this.isVisible = false
     },
     onSubmit(userInfo) {
@@ -359,7 +380,7 @@ export default {
               console.log(error)
               this.loading = false
               this.$message({
-                message: 'Хадгалах хүсэлт амжилтгүй боллоо.',
+                message: 'Хадгалах хүсэлт амжилтгүй боллоо. \n Бүртгэлтэй хэрэглэгч',
                 type: 'danger'
               })
             })

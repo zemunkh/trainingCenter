@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-
 Vue.use(Router)
 
 /* Layout */
@@ -51,6 +50,19 @@ export const constantRoutes = [
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
       meta: { title: 'Үндсэн цонх', icon: 'dashboard' }
+    }],
+    meta : {
+      roles: ['admin', 'editor']
+    }
+  },
+  {
+    path: '/admin',
+    component: Layout,
+    children: [{
+      path: 'admin',
+      name: 'Admin',
+      component: () => import('@/views/admin/index'),
+      meta: { title: 'Админ удирдлага', icon: 'new' }
     }]
     // meta: {
     //   requiresAuth: true

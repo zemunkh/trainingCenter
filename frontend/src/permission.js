@@ -27,10 +27,15 @@ router.beforeEach(async(to, from, next) => {
       NProgress.done()
     } else {
       const hasGetUserInfo = store.getters.username
+      const isAdmin = store.getters.is_admin
       if (hasGetUserInfo) {
         console.log('I have user info')
         // if (to.matched.some(record => record.meta.is_admin)) {
-        next()
+        if(to.path ==='/admin' && isAdmin) {
+          next({ path: '/admin' }) 
+        } else {
+          next()
+        }
       } else {
         try {
           // get user info

@@ -148,6 +148,9 @@
 <script>
 
 import { createCustomer } from '@/api/user'
+// import letters from '@/assets/static/letters.json'
+import departments from '@/assets/static/departments.json'
+import jobTitles from '@/assets/static/jobTitles.json'
 const today = new Date()
 
 export default {
@@ -192,70 +195,8 @@ export default {
           { type: 'date', message: 'Зөвхөн огноо байх ёстой!', trigger: ['blur', 'change'] }
         ]
       },
-      optionsDepartment: [
-        {
-          value: 1,
-          label: 'ХНАА'
-        },
-        {
-          value: 2,
-          label: 'НМҮА'
-        },
-        {
-          value: 3,
-          label: 'НХҮА'
-        },
-        {
-          value: 4,
-          label: 'НБУГ'
-        },
-        {
-          value: 5,
-          label: 'НТИА'
-        },
-        {
-          value: 6,
-          label: 'ИНЕГ'
-        },
-        {
-          value: 7,
-          label: 'АНУГ'
-        }
-      ],
-      optionsJobTitle: [
-        {
-          value: 1,
-          label: 'Инженер'
-        },
-        {
-          value: 2,
-          label: 'Жолооч'
-        },
-        {
-          value: 3,
-          label: 'Нислэгийн Удирдагч'
-        },
-        {
-          value: 4,
-          label: 'АБХА'
-        },
-        {
-          value: 5,
-          label: 'Менежер'
-        },
-        {
-          value: 6,
-          label: 'Нягтлан бодогч'
-        },
-        {
-          value: 7,
-          label: 'Програмист'
-        },
-        {
-          value: 8,
-          label: 'Оператор'
-        }
-      ],
+      optionsDepartment: departments,
+      optionsJobTitle: jobTitles,
       optionsGender: [
         {
           value: 'male',
