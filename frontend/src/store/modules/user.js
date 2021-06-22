@@ -46,7 +46,7 @@ const actions = {
         setToken(data.token)
         resolve()
       }).catch(error => {
-        console.log('Error on reject')
+        // console.log('Error on reject')
         reject(error)
       })
     })

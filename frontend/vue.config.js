@@ -37,6 +37,9 @@ module.exports = {
       '/userapi': {
         target: 'http://localhost:3000/',
         pathRewrite: {'^/userapi' : '/api'}
+      },
+      '/admin': {
+        target: 'http://localhost:3000/'
       }
     }
   },

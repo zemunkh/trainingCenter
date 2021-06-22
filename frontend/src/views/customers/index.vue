@@ -1,11 +1,23 @@
 <template>
   <div class="app-container">
     <h2>Нийт үйлчлүүлэгчид</h2>
+
+    <el-row>
+      <el-col :span="6">
+        <el-input
+          v-model="search"
+          size="mini"
+          placeholder="Нэрээр хайх"
+        />
+      </el-col>
+    </el-row>
+    <br>
     <el-row>
       <el-col :span="24">
         <el-table
           v-loading="listLoading"
-          :data="list"
+          :data="list.filter(data => !search || data.firstname.toLowerCase().includes(search.toLowerCase()))"
+          stripe
           element-loading-text="Loading"
           border
           fit
@@ -46,12 +58,12 @@
               {{ displayDate(scope.row.testedDate) }}
             </template>
           </el-table-column>
-          <el-table-column label="Утасны дугаар" width="150" align="center">
+          <el-table-column label="Утасны дугаар" align="center">
             <template slot-scope="scope">
               {{ scope.row.phoneNumber }}
             </template>
           </el-table-column>
-          <el-table-column label="Үйлдэл" width="150" align="center">
+          <el-table-column label="Үйлдэл" align="center">
             <template slot-scope="scope">
               <el-button
                 size="mini"
@@ -158,6 +170,7 @@ export default {
         entryTime: '',
         keyId: ''
       },
+      search: '',
       isActive: true,
       list: null,
       isVisible: false,

@@ -50,16 +50,16 @@ export const constantRoutes = [
       name: 'Dashboard',
       component: () => import('@/views/dashboard/index'),
       meta: { title: 'Үндсэн цонх', icon: 'dashboard' }
-    }],
-    meta : {
-      roles: ['admin', 'editor']
-    }
+    }]
+    // meta : {
+    //   roles: ['admin', 'editor']
+    // }
   },
   {
     path: '/admin',
     component: Layout,
     children: [{
-      path: 'admin',
+      path: 'index',
       name: 'Admin',
       component: () => import('@/views/admin/index'),
       meta: { title: 'Админ удирдлага', icon: 'new' }

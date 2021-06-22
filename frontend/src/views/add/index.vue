@@ -4,13 +4,18 @@
 
     <el-row>
       <el-col :span="20">
-        <el-input v-model="firstname" placeholder="Нэрээр хайх" style="width:100%;" />
+        <el-input v-model="firstname" placeholder="Нэрээр хайх" style="width:100%;" @keyup.enter.native="handleSearch" />
       </el-col>
       <el-col :span="4">
-        <el-button :loading="loadingSearch" type="primary" style="width:100%; margin-bottom:30px;" @click.native.prevent="handleSearch">Хайх</el-button>
+        <el-button
+          :loading="loadingSearch"
+          type="primary"
+          style="width:100%; margin-bottom:30px;"
+          @click.native.prevent="handleSearch"
+        >Хайх
+        </el-button>
       </el-col>
     </el-row>
-
     <el-form ref="userInfo" :model="userInfo" label-width="120px">
       <el-row>
         <el-col :span="12">
@@ -36,7 +41,7 @@
                   :value="item.value"
                 />
               </el-select>
-              <el-input v-model="userInfo.passportNumber" placeholder="9121200" style="width:60%;" />
+              <el-input v-model="userInfo.passportNumber" placeholder="9121200" style="width:60%;" @input="triggerExtractDate(userInfo.passportNumber)" />
             </el-form-item>
           </div>
         </el-col>
@@ -316,7 +321,7 @@ export default {
       if (this.firstname.length > 0) {
         this.loadingSearch = true
         searchCustomers({
-          firstname: this.firstname
+          firstname: this.firstname.trim()
         }).then(response => {
           this.result = response.results
           console.log('Result: ', response.results[0].firstname)
@@ -341,13 +346,14 @@ export default {
       console.log('Chosen row: ', row.firstname)
       this.userInfo.firstname = row.firstname
       this.userInfo.lastname = row.lastname
-      this.userInfo.gender = row.gender === 1 ? 'male' : 'female'
+      this.userInfo.gender = row.gender === '1' ? 'male' : 'female'
       this.userInfo.phoneNumber = row.phone
       this.userInfo.email = row.email
       this.userInfo.passportId.letter1 = row.rd[0]
       this.userInfo.passportId.letter2 = row.rd[1]
       this.userInfo.passportNumber = row.rd.substring(2, 10)
       this.userInfo.jobTitle = row.position
+      this.userInfo.birthdate = this.extractBirthdate(row.rd)
       this.isVisible = false
     },
     onSubmit(userInfo) {
@@ -381,7 +387,7 @@ export default {
               this.loading = false
               this.$message({
                 message: 'Хадгалах хүсэлт амжилтгүй боллоо. \n Бүртгэлтэй хэрэглэгч',
-                type: 'danger'
+                type: 'warning'
               })
             })
           })
@@ -392,6 +398,28 @@ export default {
           return false
         }
       })
+    },
+    extractBirthdate(register) {
+      let year
+      let month
+      let day
+      if (register.length === 10 && register != null) {
+        if (register[4] === '2' || register[4] === '3') {
+          year = '20'.concat(register.substring(2, 4))
+          month = (parseInt(register.substring(4, 6)) - 20).toString()
+        } else {
+          year = '19'.concat(register.substring(2, 4))
+          month = register.substring(4, 6)
+        }
+        day = register.substring(6, 8)
+        console.log('Conversion %s %s %s', year, month, day)
+        return new Date(`${month}/${day}/${year}`)
+      } else {
+        return null
+      }
+    },
+    triggerExtractDate(passportNumber) {
+      this.userInfo.birthdate = this.extractBirthdate('AA'.concat(passportNumber))
     },
     onCancel() {
       this.$message({

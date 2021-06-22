@@ -16,7 +16,7 @@
           placeholder="Username"
           name="username"
           type="text"
-          tabindex="1"
+          tabindex="2"
           auto-complete="on"
         />
       </el-form-item>
@@ -52,18 +52,10 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
 
 export default {
   name: 'Login',
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Хэрэглэгчийн нэрийг засна'))
-      } else {
-        callback()
-      }
-    }
     const validatePassword = (rule, value, callback) => {
       if (value.length < 4) {
         callback(new Error('Нууц үг 4-ээс дээш үгтэй байх ёстой.'))
@@ -77,7 +69,10 @@ export default {
         password: '5678'
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
+        username: [
+          { required: true, message: 'Админ нэр оруулна уу!', trigger: 'blur' },
+          { min: 2, max: 12, message: 'Хэт богино байна!', trigger: ['blur', 'change'] }
+        ],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       loading: false,
@@ -114,10 +109,17 @@ export default {
             this.loading = false
           }).catch((err) => {
             console.log('Error on login: ', err)
+            this.$message({
+              message: 'Хэрэглэгчийн нэр эсвэл нууц үг буруу!',
+              type: 'warning'
+            })
             this.loading = false
           })
         } else {
-          console.log('error submit!!')
+          this.$message({
+            message: 'Алдаатай хүсэлт',
+            type: 'warning'
+          })
           return false
         }
       })

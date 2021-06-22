@@ -39,11 +39,15 @@ adminDb.selectAll((err, rows) => {
 })
 
 router.get('/admin/users', function(req, res) {
-    adminDb.selectAll((err, rows),
-    function(err) {
+    adminDb.selectAll((err, rows) => {
         if(err) return res.status(500).send("Problem occured during getting users");
         res.status(200).send({users: rows});
-    });
+    })
+    // adminDb.selectAll((err, rows),
+    // function(err) {
+    //     if(err) return res.status(500).send("Problem occured during getting users");
+    //     res.status(200).send({users: rows});
+    // });
 });
 
 router.post('/admin/updatePassword', async function(req, res) {

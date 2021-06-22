@@ -6,7 +6,7 @@ class Db {
         this.db = new sqlite3.Database(file);
         this.createTable()
     }                
-
+    // created_at TEXT DEFAULT CURRENT_TIMESTAMP
     createTable() {
         const sql = `
             CREATE TABLE IF NOT EXISTS user (
