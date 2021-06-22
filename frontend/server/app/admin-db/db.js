@@ -49,7 +49,7 @@ class Db {
 
     updatePassword(user, callback) {
         return this.db.run(
-            'UPDATE user SET user_pass =  WHERE username = ?',
+            'UPDATE user SET user_pass = ? WHERE username = ?',
             user, (err) => {
                 callback(err)
             })

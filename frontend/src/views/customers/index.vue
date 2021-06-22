@@ -172,7 +172,7 @@ export default {
       },
       search: '',
       isActive: true,
-      list: null,
+      list: [],
       isVisible: false,
       loading: false,
       listLoading: true,

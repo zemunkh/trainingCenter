@@ -44,7 +44,7 @@
               {{ scope.row.is_admin == 1 ? "Тийм" : "Үгүй" }}
             </template>
           </el-table-column>
-          <el-table-column label="Нууц үг солих" width="150" align="center">
+          <el-table-column label="Нууц үг солих" width="180" align="center">
             <template slot-scope="scope">
               <el-button
                 size="mini"
@@ -136,12 +136,36 @@
               :loading="loading"
               type="primary"
               style="width: 100%;"
-              @click="changePassword()"
+              @click="confirm('passForm')"
             >Батлах
             </el-button>
           </el-col>
         </el-row>
       </el-form>
+    </el-dialog>
+
+    <el-dialog title="Та зөвшөөрч байна уу?" :visible.sync="isVisibleDelete" width="40%">
+      <el-row>
+        <el-col>
+          <el-button
+            size="mini"
+            type="info"
+            style="width: 100%;"
+            @click="isVisibleDelete = false"
+          >Үгүй
+          </el-button>
+        </el-col>
+        <el-col>
+          <el-button
+            size="mini"
+            :loading="loading"
+            type="primary"
+            style="width: 100%;"
+            @click="deleteUser()"
+          >Тийм
+          </el-button>
+        </el-col>
+      </el-row>
     </el-dialog>
   </div>
 </template>
@@ -149,7 +173,7 @@
 <script>
 
 import axios from 'axios'
-import { createAdmin } from '@/api/user'
+import { createAdmin, updateAdminPassword, deleteAdmin } from '@/api/user'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -163,11 +187,13 @@ export default {
       passForm: {
         password: ''
       },
+      selectedUsername: '',
       list: null,
       listLoading: false,
       loading: false,
       isVisibleNew: false,
       isVisibleChange: false,
+      isVisibleDelete: false,
       rules: {
         username: [
           { required: true, message: 'Админ нэр оруулна уу!', trigger: 'blur' },
@@ -189,9 +215,6 @@ export default {
     this.fetchUsers()
   },
   methods: {
-    showChangePassword(index, row) {
-      this.isVisibleChange = true
-    },
     onSubmitAdmin(userInfo) {
       console.log('Admin button clicked')
       this.$refs[userInfo].validate((valid) => {
@@ -208,6 +231,7 @@ export default {
                 message: 'Амжилттай нэмэгдлээ.',
                 type: 'success'
               })
+              this.fetchUsers()
               resolve()
             }).catch(error => {
               console.log(error)
@@ -236,11 +260,70 @@ export default {
         this.listLoading = false
       })
     },
-    changePassword(index, row) {
-      console.log('Selected row: ', row)
+    showChangePassword(index, row) {
+      this.isVisibleChange = true
+      this.selectedUsername = row.username
+    },
+    confirm(passInfo) {
+      console.log('Password: ', this.passForm.password)
+      this.$refs[passInfo].validate((valid) => {
+        if (valid) {
+          this.loading = true
+          return new Promise((resolve, reject) => {
+            updateAdminPassword({
+              username: this.selectedUsername,
+              password: this.passForm.password
+            }).then(response => {
+              console.log(response)
+              this.loading = false
+              this.isVisibleChange = false
+              this.selectedUsername = ''
+              this.$message({
+                message: 'Амжилттай өөрчлөгдлөө.',
+                type: 'success'
+              })
+              this.fetchUsers()
+              resolve()
+            }).catch(error => {
+              console.log(error)
+              this.loading = false
+              this.$message({
+                message: 'Хадгалах хүсэлт амжилтгүй боллоо. \n',
+                type: 'warning'
+              })
+            })
+          })
+        } else {
+          console.log('Validation fail')
+          this.$message('Буруу эсвэл дутуу мэдээлэл оруулсан байна!')
+          return false
+        }
+      })
     },
     deleteUser(index, row) {
       console.log('Selected row: ', row)
+      this.loading = true
+      return new Promise((resolve, reject) => {
+        deleteAdmin({
+          username: row.username
+        }).then(response => {
+          console.log(response)
+          this.loading = false
+          this.$message({
+            message: 'Амжилттай устгагдлаа.',
+            type: 'success'
+          })
+          this.fetchUsers()
+          resolve()
+        }).catch(error => {
+          console.log(error)
+          this.loading = false
+          this.$message({
+            message: 'Устгах хүсэлт амжилтгүй боллоо.',
+            type: 'warning'
+          })
+        })
+      })
     }
   }
 }

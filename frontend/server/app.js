@@ -62,13 +62,16 @@ router.post('/admin/updatePassword', async function(req, res) {
         ],
         function(err) {
             if(err) return res.status(500).send("Problem occured during update Admin info");
-            res.status(200).send({user: user});
-
+            adminDb.selectByUsername(req.body.username, (err, user) => {
+                if(err) return res.status(500).send("Problem to get user");
+                // console.log("User ", user);
+                res.status(200).send({user: user});
+            })
         });
     });
 });
 
-router.post('/admin/register', async function(req, res) {
+router.post('/admin/create', async function(req, res) {
     console.log("non hashed pass: ", req.body.password);
     console.log("username: ", req.body.username);
     // Insert: username, email, bcrypt hash
@@ -79,7 +82,7 @@ router.post('/admin/register', async function(req, res) {
             hash,
         ],
         function(err) {
-            if(err) return res.status(500).send("Problem occured during registering Admin");
+            if(err) return res.status(500).send("Problem occured during creating Admin");
             adminDb.selectByUsername(req.body.username, (err, user) => {
                 if(err) return res.status(500).send("Problem to get user");
                 console.log("User ", user);
