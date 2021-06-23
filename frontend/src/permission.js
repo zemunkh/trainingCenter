@@ -14,9 +14,11 @@ router.beforeEach(async(to, from, next) => {
   // start progress bar
   NProgress.start()
   // set page title
+  const adminAuth = to.matched.some(x => x.meta.adminAuth)
   document.title = getPageTitle(to.meta.title)
   const hasToken = getToken()
   console.log('Token: ', hasToken)
+  console.log('Path: ', to.path)
 
   if (hasToken) {
     if (to.path === '/login') {
@@ -24,17 +26,18 @@ router.beforeEach(async(to, from, next) => {
       next({ path: '/' })
       console.log('Automatically directed to login')
       NProgress.done()
-    } else if (to.path === '/admin') {
-      const isAdmin = store.getters.is_admin
-      console.log('Meta: %s %s', to.meta.roles, isAdmin)
-      if (to.meta.roles === 'admin' && isAdmin === 1) {
-        next({ path: '/admin' })
+    } else if (to.path === '/admin/index') {
+      if (adminAuth && store.getters.username === 'admin') {
+        console.log('Yes it is admin')
+        next()
       } else {
-        next(`/?redirect=${to.path}`)
+        next(`/dashboard?redirect=${to.path}`)
       }
+      NProgress.done()
     } else {
       const hasGetUserInfo = store.getters.username
       if (hasGetUserInfo) {
+        console.log('Yes it is having info')
         next()
         NProgress.done()
       } else {
@@ -45,6 +48,7 @@ router.beforeEach(async(to, from, next) => {
           next()
         } catch (error) {
           // remove token and go to login page to re-login
+          console.log('Catching error')
           await store.dispatch('user/resetToken')
           Message.error(error || 'Has Error')
           next(`/login?redirect=${to.path}`)

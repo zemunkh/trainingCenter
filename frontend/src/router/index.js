@@ -62,7 +62,11 @@ export const constantRoutes = [
       path: 'index',
       name: 'Admin',
       component: () => import('@/views/admin/index'),
-      meta: { title: 'Админ удирдлага', icon: 'new', roles: 'admin' }
+      meta: {
+        title: 'Админ удирдлага',
+        icon: 'new',
+        adminAuth: true
+      }
     }]
     // meta: {
     //   requiresAuth: true
@@ -181,5 +185,21 @@ export function resetRouter() {
   const newRouter = createRouter()
   router.matcher = newRouter.matcher // reset router
 }
+
+// router.beforeEach((to, from, next) => {
+//   const adminAuth = to.matched.some(x => x.meta.adminAuth)
+//   if (!to.matched.length) {
+//     next({ path: '/404'})
+//   } else if (adminAuth) {
+//     const hasGetUserInfo = store.getters.username
+//     if(hasGetUserInfo === 'admin') {
+//       next()
+//     } else {
+//       next({ path: '/'})
+//     }
+//   } else {
+//     next()
+//   }
+// })
 
 export default router

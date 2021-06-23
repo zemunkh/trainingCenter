@@ -58,13 +58,15 @@
           </el-table-column>
           <el-table-column label="Устгах" align="center">
             <template slot-scope="scope">
-              <el-button
-                size="mini"
-                type="danger"
-                icon="el-icon-delete"
-                @click="selectUser(scope.$index, scope.row)"
-              >Устгах
-              </el-button>
+              <div v-if="scope.row.is_admin !== 1">
+                <el-button
+                  size="mini"
+                  type="danger"
+                  icon="el-icon-delete"
+                  @click="selectUser(scope.$index, scope.row)"
+                >Устгах
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -306,30 +308,40 @@ export default {
     },
     deleteUser() {
       this.loading = true
-      return new Promise((resolve, reject) => {
-        deleteAdmin({
-          username: this.selectedUsername
-        }).then(response => {
-          console.log(response)
-          this.loading = false
-          this.selectedUsername = ''
-          this.$message({
-            message: 'Амжилттай устгагдлаа.',
-            type: 'success'
-          })
-          this.isVisibleDelete = false
-          this.fetchUsers()
-          resolve()
-        }).catch(error => {
-          console.log(error)
-          this.isVisibleDelete = false
-          this.loading = false
-          this.$message({
-            message: 'Устгах хүсэлт амжилтгүй боллоо.',
-            type: 'warning'
+      if (this.selectedUsername !== 'admin') {
+        return new Promise((resolve, reject) => {
+          deleteAdmin({
+            username: this.selectedUsername
+          }).then(response => {
+            console.log(response)
+            this.loading = false
+            this.selectedUsername = ''
+            this.$message({
+              message: 'Амжилттай устгагдлаа.',
+              type: 'success'
+            })
+            this.isVisibleDelete = false
+            this.fetchUsers()
+            resolve()
+          }).catch(error => {
+            console.log(error)
+            this.isVisibleDelete = false
+            this.loading = false
+            this.$message({
+              message: 'Устгах хүсэлт амжилтгүй боллоо.',
+              type: 'warning'
+            })
           })
         })
-      })
+      } else {
+        this.isVisibleDelete = false
+        this.loading = false
+        this.$message({
+          message: 'Админыг устгаж чадахгүй!',
+          type: 'warning'
+        })
+        return null
+      }
     }
   }
 }
