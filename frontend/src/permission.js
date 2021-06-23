@@ -15,7 +15,6 @@ router.beforeEach(async(to, from, next) => {
   NProgress.start()
   // set page title
   document.title = getPageTitle(to.meta.title)
-
   const hasToken = getToken()
   console.log('Token: ', hasToken)
 
@@ -25,17 +24,19 @@ router.beforeEach(async(to, from, next) => {
       next({ path: '/' })
       console.log('Automatically directed to login')
       NProgress.done()
+    } else if (to.path === '/admin') {
+      const isAdmin = store.getters.is_admin
+      console.log('Meta: %s %s', to.meta.roles, isAdmin)
+      if (to.meta.roles === 'admin' && isAdmin === 1) {
+        next({ path: '/admin' })
+      } else {
+        next(`/?redirect=${to.path}`)
+      }
     } else {
       const hasGetUserInfo = store.getters.username
-      const isAdmin = store.getters.is_admin
       if (hasGetUserInfo) {
-        console.log('I have user info')
-        // if (to.matched.some(record => record.meta.is_admin)) {
-        if(to.path ==='/admin' && isAdmin) {
-          next({ path: '/admin' }) 
-        } else {
-          next()
-        }
+        next()
+        NProgress.done()
       } else {
         try {
           // get user info

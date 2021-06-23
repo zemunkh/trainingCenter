@@ -7,7 +7,7 @@ const getDefaultState = () => {
     token: '',
     username: '',
     avatar: '',
-    is_admin: ''
+    is_admin: 0
   }
 }
 
@@ -77,23 +77,12 @@ const actions = {
   // user logout
   logout({ commit, state }) {
     return () => {
+      console.log('Log out is called')
       removeToken() // must remove  token  first
       resetRouter()
       commit('RESET_STATE')
     }
   },
-  // logout({ commit, state }) {
-  //   return new Promise((resolve, reject) => {
-  //     logout(state.token).then(() => {
-  //       removeToken() // must remove  token  first
-  //       resetRouter()
-  //       commit('RESET_STATE')
-  //       resolve()
-  //     }).catch(error => {
-  //       reject(error)
-  //     })
-  //   })
-  // },
 
   // remove token
   resetToken({ commit }) {

@@ -11,7 +11,7 @@
           <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
-          <el-dropdown-item @click.native="logout">
+          <el-dropdown-item @click.native="logout()">
             <span style="display:block;">Гарах</span>
           </el-dropdown-item>
         </el-dropdown-menu>
@@ -40,8 +40,9 @@ export default {
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
-    async logout() {
-      await this.$store.dispatch('user/logout')
+    logout() {
+      // this.$store.dispatch('user/logout')
+      this.$store.dispatch('user/resetToken')
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     }
   }

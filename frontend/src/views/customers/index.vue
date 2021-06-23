@@ -128,6 +128,26 @@
         </el-row>
         <el-row>
           <el-col>
+            <el-form-item
+              prop="exitTime"
+              label="Гарах цаг"
+              :rules="rules.exitTime"
+            >
+              <el-time-select
+                v-model="timelog.exitTime"
+                :picker-options="{
+                  start: '07:00',
+                  step: '01:00',
+                  end: '00:00'
+                }"
+                placeholder="Цаг сонгох"
+                style="width: 100%;"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col>
             <el-button
               size="mini"
               :loading="loading"
@@ -168,6 +188,7 @@ export default {
         customerId: '',
         roomId: 3,
         entryTime: '',
+        exitTime: '',
         keyId: ''
       },
       search: '',
@@ -179,6 +200,9 @@ export default {
       optionsRoom: rooms,
       rules: {
         entryTime: [
+          { required: true, message: 'Цагийг оруулна уу!', trigger: 'blur' }
+        ],
+        exitTime: [
           { required: true, message: 'Цагийг оруулна уу!', trigger: 'blur' }
         ]
       }

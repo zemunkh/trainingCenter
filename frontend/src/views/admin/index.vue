@@ -13,6 +13,7 @@
       </el-col>
     </el-row>
     <br>
+
     <el-row>
       <el-col :span="24">
         <el-table
@@ -61,7 +62,7 @@
                 size="mini"
                 type="danger"
                 icon="el-icon-delete"
-                @click="deleteUser(scope.$index, scope.row)"
+                @click="selectUser(scope.$index, scope.row)"
               >Устгах
               </el-button>
             </template>
@@ -144,23 +145,21 @@
       </el-form>
     </el-dialog>
 
-    <el-dialog title="Та зөвшөөрч байна уу?" :visible.sync="isVisibleDelete" width="40%">
+    <el-dialog title="Та зөвшөөрч байна уу?" :visible.sync="isVisibleDelete" width="30%">
       <el-row>
-        <el-col>
+        <el-col :span="12" align="right">
           <el-button
-            size="mini"
             type="info"
-            style="width: 100%;"
+            style="width: 50%;"
             @click="isVisibleDelete = false"
           >Үгүй
           </el-button>
         </el-col>
-        <el-col>
+        <el-col :span="12" align="right">
           <el-button
-            size="mini"
             :loading="loading"
             type="primary"
-            style="width: 100%;"
+            style="width: 50%;"
             @click="deleteUser()"
           >Тийм
           </el-button>
@@ -227,6 +226,7 @@ export default {
             }).then(response => {
               console.log(response)
               this.loading = false
+              this.isVisibleNew = false
               this.$message({
                 message: 'Амжилттай нэмэгдлээ.',
                 type: 'success'
@@ -300,23 +300,29 @@ export default {
         }
       })
     },
-    deleteUser(index, row) {
-      console.log('Selected row: ', row)
+    selectUser(index, row) {
+      this.isVisibleDelete = true
+      this.selectedUsername = row.username
+    },
+    deleteUser() {
       this.loading = true
       return new Promise((resolve, reject) => {
         deleteAdmin({
-          username: row.username
+          username: this.selectedUsername
         }).then(response => {
           console.log(response)
           this.loading = false
+          this.selectedUsername = ''
           this.$message({
             message: 'Амжилттай устгагдлаа.',
             type: 'success'
           })
+          this.isVisibleDelete = false
           this.fetchUsers()
           resolve()
         }).catch(error => {
           console.log(error)
+          this.isVisibleDelete = false
           this.loading = false
           this.$message({
             message: 'Устгах хүсэлт амжилтгүй боллоо.',

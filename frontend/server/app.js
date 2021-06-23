@@ -101,7 +101,7 @@ router.post('/admin/delete', async function(req, res) {
     ],
     function(err) {
         if(err) return res.status(500).send("Problem occured during deleting User");
-        res.status(200).send("Successfully deleted");
+        res.status(200).send({results: 'Success'});
     });
 });
 

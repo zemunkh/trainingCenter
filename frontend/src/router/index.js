@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 Vue.use(Router)
-
 /* Layout */
 import Layout from '@/layout'
 
@@ -29,6 +28,7 @@ import Layout from '@/layout'
  * a base page that does not have permission requirements
  * all roles can be accessed
  */
+
 export const constantRoutes = [
   {
     path: '/login',
@@ -62,7 +62,7 @@ export const constantRoutes = [
       path: 'index',
       name: 'Admin',
       component: () => import('@/views/admin/index'),
-      meta: { title: 'Админ удирдлага', icon: 'new' }
+      meta: { title: 'Админ удирдлага', icon: 'new', roles: 'admin' }
     }]
     // meta: {
     //   requiresAuth: true

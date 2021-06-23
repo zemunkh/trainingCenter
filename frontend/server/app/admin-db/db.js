@@ -58,7 +58,7 @@ class Db {
     deleteByUsername(username, callback) {
         return this.db.run(
             'DELETE FROM user WHERE username = ?',
-            [id], function(err) {
+            [username], function(err) {
                 callback(err)
             })
     }
