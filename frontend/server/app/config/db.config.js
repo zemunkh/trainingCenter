@@ -20,7 +20,7 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.customers = require('../models/customer.model.js')(sequelize, Sequelize);
-// db.timelogs = require('../models/timelog.model.js')(sequelize, Sequelize);
+db.timelogs = require('../models/timelog.model.js')(sequelize, Sequelize);
 
 
 module.exports = db;

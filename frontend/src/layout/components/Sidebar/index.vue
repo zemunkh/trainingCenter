@@ -34,10 +34,8 @@ export default {
     routes() {
       console.log('Is admin: ', this.is_admin)
       if (this.is_admin === 1) {
-        console.log('Routes : ', this.$router.options.routes)
         return this.$router.options.routes
       } else {
-        console.log('Routes : ', this.$router.options.routes)
         return this.$router.options.routes.filter(route => route.path !== '/admin')
       }
     },

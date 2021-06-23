@@ -28,7 +28,7 @@ exports.findAll = (req, res) => {
 	Customer.findAll().then(customers => {
 		// Send all customers to Client
 		console.log('On DB Customers: ', customers);
-		res.status(200).send({data: customers});
+		res.status(200).send(customers);
 	}).catch(err => {
 		res.status(500).send("Error -> " + err);
 	})

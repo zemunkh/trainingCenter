@@ -227,7 +227,7 @@ export default {
       this.listLoading = true
       axios.get('/api/customers').then(
         response => {
-          this.list = response.data.data
+          this.list = response.data
           this.listLoading = false
         }).catch(error => {
         console.log('Error: ', error)

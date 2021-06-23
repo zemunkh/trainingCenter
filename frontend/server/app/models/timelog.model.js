@@ -1,4 +1,4 @@
-const { sequelize, Sequelize } = require("../config/db.config");
+const { sequelize } = require("../config/db.config");
 
 module.exports = (sequelize, Sequelize) => {
     const TimeLog = sequelize.define('timelog', {
@@ -6,12 +6,12 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING,
         },
         entryTime: {
-            type: Sequelize.DATETIME,
+            type: Sequelize.DATE,
         },
         exitTime: {
-            type: Sequelize.DATETIME,
+            type: Sequelize.DATE,
         },
-        hallType: {
+        hallNumber: {
             type: Sequelize.STRING,
         },
         lockerNumber: {
