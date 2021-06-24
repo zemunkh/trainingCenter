@@ -65,19 +65,37 @@
           </el-table-column>
           <el-table-column label="Үйлдэл" align="center">
             <template slot-scope="scope">
-              <el-button
-                size="mini"
-                type="success"
-                @click="chooseCustomer(scope.$index, scope.row)"
-              >Сонгох
-              </el-button>
+              <el-row>
+                <el-col :span="12">
+                  <el-button
+                    size="mini"
+                    type="primary"
+                    icon="el-icon-check"
+                    @click="chooseCustomerToTimelog(scope.$index, scope.row)"
+                  >Сонгох
+                  </el-button>
+                </el-col>
+                <el-col :span="12">
+                  <el-button
+                    size="mini"
+                    type="warning"
+                    icon="el-icon-edit"
+                    @click="chooseCustomerToEdit(scope.$index, scope.row)"
+                  >Засах
+                  </el-button>
+                </el-col>
+              </el-row>
             </template>
           </el-table-column>
         </el-table>
       </el-col>
     </el-row>
 
-    <el-dialog title="Цаг бүртгэл" :visible.sync="isVisible" width="40%">
+    <el-dialog title="Хэрэглэгчийн мэдээ засах" :visible.sync="isVisibleEdit" width="50%">
+      Хэрэглэгч мэдээлэл
+    </el-dialog>
+
+    <el-dialog :visible.sync="isVisibleTimelog" width="40%">
       <el-form ref="timelog" :model="timelog" label-width="120px">
         <el-row>
           <el-col>
@@ -138,7 +156,7 @@
                 :picker-options="{
                   start: '07:00',
                   step: '01:00',
-                  end: '00:00'
+                  end: '23:00'
                 }"
                 placeholder="Цаг сонгох"
                 style="width: 100%;"
@@ -146,6 +164,7 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <br>
         <el-row>
           <el-col>
             <el-button
@@ -153,9 +172,14 @@
               :loading="loading"
               type="primary"
               style="width: 100%;"
-              @click="registerTime()"
+              @click="registerTime('timelog')"
             >Бүртгэх
             </el-button>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col>
+            Хүснэгт
           </el-col>
         </el-row>
       </el-form>
@@ -169,7 +193,8 @@
 import axios from 'axios'
 import moment from 'moment'
 import rooms from '@/assets/static/rooms.json'
-
+import { createTimelog } from '@/api/timelog'
+const today = new Date()
 export default {
   filters: {
     statusFilter(status) {
@@ -189,12 +214,14 @@ export default {
         roomId: 3,
         entryTime: '',
         exitTime: '',
-        keyId: ''
+        keyId: '',
+        isActive: true
       },
+      activeName: 'first',
       search: '',
-      isActive: true,
       list: [],
-      isVisible: false,
+      isVisibleTimelog: false,
+      isVisibleEdit: false,
       loading: false,
       listLoading: true,
       optionsRoom: rooms,
@@ -212,15 +239,61 @@ export default {
     this.fetchCustomers()
   },
   methods: {
-    chooseCustomer(index, row) {
+    chooseCustomerToEdit(index, row) {
+      this.isVisibleEdit = true
+    },
+    chooseCustomerToTimelog(index, row) {
       console.log('Me chosen: ', row)
       this.timelog.customerId = row.id
       this.timelog.name = `${row.lastname.length > 1 ? row.lastname.substring(0, 2) : row.lastname}. ${row.firstname}`
-      this.isVisible = true
+      this.isVisibleTimelog = true
     },
-    registerTime() {
-      this.loading = true
-
+    registerTime(timelogForm) {
+      console.log('Entry time: ', this.timelog.entryTime)
+      console.log('Exit time: ', this.timelog.exitTime)
+      const year = today.getFullYear()
+      const month = today.getMonth()
+      const date = today.getDate()
+      const entryTime = new Date(`${month + 1}/${date}/${year} ${this.timelog.entryTime}`)
+      const exitTime = new Date(`${month + 1}/${date}/${year} ${this.timelog.exitTime}`)
+      console.log('Converted Entry date: ', entryTime)
+      console.log('Converted Exit date: ', exitTime)
+      this.$refs[timelogForm].validate((valid) => {
+        if (valid) {
+          this.loading = true
+          return new Promise((resolve, reject) => {
+            createTimelog({
+              customerId: this.timelog.customerId,
+              entryTime: entryTime,
+              exitTime: exitTime,
+              roomId: this.timelog.roomId,
+              lockerNumber: '0',
+              isActive: true
+            }).then(response => {
+              console.log(response)
+              this.loading = false
+              this.isVisibleTimelog = false
+              this.$message({
+                message: 'Амжилттай нэмэгдлээ.',
+                type: 'success'
+              })
+              resolve()
+            }).catch(error => {
+              console.log(error)
+              this.loading = false
+              this.$message({
+                message: 'Хадгалах хүсэлт амжилтгүй боллоо.',
+                type: 'warning'
+              })
+            })
+          })
+        } else {
+          this.loading = false
+          console.log('Validation fail')
+          this.$message('Буруу эсвэл дутуу мэдээлэл оруулсан байна!')
+          return false
+        }
+      })
       // this.loading = false
     },
     fetchCustomers() {

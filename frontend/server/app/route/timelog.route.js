@@ -7,11 +7,14 @@ module.exports = function(app) {
     // Retrieve all Timelog
     app.get('/api/timelogs', timelogs.findAll);
  
-    // Retrieve a single Timelog by Id
-    app.get('/api/timelog/:timelogId', timelogs.findById);
+    // Retrieve a single Timelog by customerId
+    app.get('/api/timelog/:timelogId', timelogs.findByTimelogId);
 	
+	// Retrieve Timelog customerId
+    app.get('/api/timelogs/:customerId', timelogs.findByCustomerId);
+
 	// Retrieve Timelog roomId
-    app.get('/api/timelogs/roomId/:roomId', timelogs.findByRoomId);
+    app.get('/api/timelogs/:roomId', timelogs.findByRoomId);
  
     // Update a Timelog with Id
     app.put('/api/timelog/:timelogId', timelogs.update);

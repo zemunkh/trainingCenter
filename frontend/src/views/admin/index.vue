@@ -174,7 +174,7 @@
 <script>
 
 import axios from 'axios'
-import { createAdmin, updateAdminPassword, deleteAdmin } from '@/api/user'
+import { createAdmin, updateAdminPassword, deleteAdmin } from '@/api/admin'
 import { mapGetters } from 'vuex'
 
 export default {

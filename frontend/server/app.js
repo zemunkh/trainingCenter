@@ -173,6 +173,7 @@ db.sequelize.sync({force: true}).then(() => {
 });
 
 require('./app/route/customer.route.js')(app);
+require('./app/route/timelog.route.js')(app);
 
 // demo route
 app.get('/', (req, res) => {

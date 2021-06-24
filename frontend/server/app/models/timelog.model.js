@@ -11,7 +11,7 @@ module.exports = (sequelize, Sequelize) => {
         exitTime: {
             type: Sequelize.DATE,
         },
-        hallNumber: {
+        roomId: {
             type: Sequelize.STRING,
         },
         lockerNumber: {

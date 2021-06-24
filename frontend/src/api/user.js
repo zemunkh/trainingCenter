@@ -42,37 +42,23 @@ export async function fetchCustomerById(data) {
   return await response.json()
 }
 
+export async function updateCustomerById(data) {
+  const response = await fetch('/api/customers?' +
+  new URLSearchParams({
+    customerId: data.customerId
+  }), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  return await response.json()
+}
+
+// Search from iMCAA 3rd party API Service
 export async function searchCustomers(data) {
   const response = await fetch('/api/search?' +
   new URLSearchParams({
     firstname: data.firstname
   }))
-  return await response.json()
-}
-
-export async function createAdmin(data) {
-  const response = await fetch(`/admin/create`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  return await response.json()
-}
-
-export async function updateAdminPassword(data) {
-  const response = await fetch(`/admin/updatePassword`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
-  return await response.json()
-}
-
-export async function deleteAdmin(data) {
-  const response = await fetch(`/admin/delete`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-  })
   return await response.json()
 }
