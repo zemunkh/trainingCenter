@@ -188,7 +188,6 @@ export default {
       passForm: {
         password: ''
       },
-      selectedUsername: '',
       list: null,
       listLoading: false,
       loading: false,
@@ -303,19 +302,24 @@ export default {
       })
     },
     selectUser(index, row) {
-      this.isVisibleDelete = true
-      this.selectedUsername = row.username
+      this.$alert('Та зөвшөөрч байна уу?', 'Зөвшөөрөл', {
+        confirmButtonText: 'Тийм',
+        callback: action => {
+          if (action === 'confirm') {
+            this.deleteUser(row.username)
+          }
+        }
+      })
     },
-    deleteUser() {
+    deleteUser(username) {
       this.loading = true
-      if (this.selectedUsername !== 'admin') {
+      if (username !== 'admin') {
         return new Promise((resolve, reject) => {
           deleteAdmin({
-            username: this.selectedUsername
+            username: username
           }).then(response => {
             console.log(response)
             this.loading = false
-            this.selectedUsername = ''
             this.$message({
               message: 'Амжилттай устгагдлаа.',
               type: 'success'

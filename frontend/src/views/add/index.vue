@@ -51,12 +51,18 @@
             label="Харъяа алба"
             :rules="rules.department"
           >
-            <el-select v-model="userInfo.department" placeholder="Аль салбар нэгж алба" style="width:100%;">
+            <el-select
+              v-model="userInfo.department"
+              filterable
+              allow-create
+              placeholder="Аль салбар нэгж алба"
+              style="width:100%;"
+            >
               <el-option
                 v-for="item in optionsDepartment"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+                :key="item.id"
+                :label="item.name"
+                :value="item.id"
               />
             </el-select>
           </el-form-item>
@@ -232,7 +238,7 @@
 
 import { createCustomer, searchCustomers } from '@/api/user'
 import letters from '@/assets/static/letters.json'
-import departments from '@/assets/static/departments.json'
+import departments from '@/assets/static/deps.json'
 import jobTitles from '@/assets/static/jobTitles.json'
 const today = new Date()
 
@@ -294,7 +300,8 @@ export default {
           { type: 'date', message: 'Зөвхөн огноо байх ёстой!', trigger: ['blur', 'change'] }
         ],
         department: [
-          { required: true, message: 'Алба нэгжийн мэдээлэл оруулна уу!', trigger: 'blur' }
+          { required: true, message: 'Алба нэгжийн мэдээлэл оруулна уу!', trigger: 'blur' },
+          { pattern: /^[0-9 -_]{1,11}$/, message: 'Зөвхөн тоо байна!', trigger: ['blur', 'change'] }
         ],
         jobTitle: [
           { required: true, message: 'Албан тушаалын мэдээлэл оруулна уу!', trigger: 'blur' }
@@ -352,6 +359,7 @@ export default {
       this.userInfo.passportId.letter1 = row.rd[0]
       this.userInfo.passportId.letter2 = row.rd[1]
       this.userInfo.passportNumber = row.rd.substring(2, 10)
+      this.userInfo.department = null
       this.userInfo.jobTitle = row.position
       this.userInfo.birthdate = this.extractBirthdate(row.rd)
       this.isVisible = false

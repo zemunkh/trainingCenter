@@ -18,7 +18,7 @@ export async function getInfo(data) {
 }
 
 export async function createCustomer(data) {
-  const response = await fetch(`/api/customer`, {
+  const response = await fetch(`/api/customers`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
@@ -43,11 +43,17 @@ export async function fetchCustomerById(data) {
 }
 
 export async function updateCustomerById(data) {
-  const response = await fetch('/api/customers?' +
-  new URLSearchParams({
-    customerId: data.customerId
-  }), {
-    method: 'PUT',
+  const response = await fetch(`/api/customers/update`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  return await response.json()
+}
+
+export async function deleteById(data) {
+  const response = await fetch(`/api/customers/delete`, {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   })

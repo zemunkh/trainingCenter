@@ -145,18 +145,6 @@ export const constantRoutes = [
     ]
   },
   {
-    path: '/register',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        name: 'Register',
-        component: () => import('@/views/register/index'),
-        meta: { title: 'Бүртгэл', icon: 'form' }
-      }
-    ]
-  },
-  {
     path: '/add',
     component: Layout,
     children: [

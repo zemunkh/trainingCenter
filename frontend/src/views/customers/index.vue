@@ -50,7 +50,7 @@
           </el-table-column>
           <el-table-column label="Харъяа алба" width="150" align="center">
             <template slot-scope="scope">
-              {{ scope.row.department }}
+              {{ departmentFilter(scope.row.department) }}
             </template>
           </el-table-column>
           <el-table-column label="Шинжилгээ хүчинтэй огноо" width="150" align="center">
@@ -91,8 +91,177 @@
       </el-col>
     </el-row>
 
-    <el-dialog title="Хэрэглэгчийн мэдээ засах" :visible.sync="isVisibleEdit" width="50%">
-      Хэрэглэгч мэдээлэл
+    <el-dialog title="Хэрэглэгчийн мэдээ засах" :visible.sync="isVisibleEdit" width="60%">
+      <el-form ref="userInfo" :model="userInfo" label-width="120px">
+        <el-row>
+          <el-col :span="12">
+            <div class="grid-content bg-purple">
+              <el-form-item
+                prop="passportNumber"
+                label="Регистер"
+                :rules="userRules.passportNumber"
+              >
+                <el-select v-model="userInfo.passportId.letter1" placeholder="А" style="width:20%;">
+                  <el-option
+                    v-for="item in letters"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+                <el-select v-model="userInfo.passportId.letter2" placeholder="Б" style="width:20%;">
+                  <el-option
+                    v-for="item in letters"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  />
+                </el-select>
+                <el-input v-model="userInfo.passportNumber" placeholder="9121200" style="width:60%;" @input="triggerExtractDate(userInfo.passportNumber)" />
+              </el-form-item>
+            </div>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+              prop="department"
+              label="Харъяа алба"
+              :rules="userRules.department"
+            >
+              <el-select
+                v-model="userInfo.department"
+                filterable
+                allow-create
+                placeholder="Аль салбар нэгж алба"
+                style="width:100%;"
+              >
+                <el-option
+                  v-for="item in optionsDepartment"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <div class="grid-content bg-purple">
+              <el-form-item
+                prop="lastname"
+                label="Овог"
+                :rules="userRules.name"
+              >
+                <el-input v-model="userInfo.lastname" placeholder="Овог" />
+              </el-form-item>
+            </div>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+              prop="jobTitle"
+              label="Албан тушаал"
+              :rules="userRules.jobTitle"
+            >
+              <el-input
+                v-model="userInfo.jobTitle"
+                placeholder="Ямар тушаал"
+                style="width:100%;"
+              />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+              prop="firstname"
+              label="Өөрийн нэр"
+              :rules="userRules.name"
+            >
+              <el-input v-model="userInfo.firstname" placeholder="Нэр" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="Хүйс">
+              <el-select
+                v-model="userInfo.gender"
+                placeholder="Хүйс"
+              >
+                <el-option
+                  v-for="item in optionsGender"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+              prop="birthdate"
+              label="Төрсөн он"
+              :rules="userRules.birthdate"
+            >
+              <el-date-picker
+                v-model="userInfo.birthdate"
+                type="year"
+                placeholder="Огноог оруулах"
+                style="width:100%;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+              prop="email"
+              label="Имейл"
+              :rules="userRules.email"
+            >
+              <el-input v-model="userInfo.email" placeholder="mail@mcaa.gov.mn" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item
+              prop="testedDate"
+              label="Шинжилгээ өгсөн огноо"
+              :rules="userRules.testedDate"
+            >
+              <el-date-picker
+                v-model="userInfo.testedDate"
+                type="date"
+                placeholder="Мэдээг оруулах"
+                style="width: 100%;"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item
+              prop="phoneNumber"
+              label="Утас"
+              :rules="userRules.phoneNumber"
+            >
+              <el-input v-model="userInfo.phoneNumber" type="number" placeholder="99119911" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12" align="right">
+            <el-button :loading="loading" type="success" style="width: 50%;" icon="el-icon-circle-check" @click="onSave('userInfo')">Хадгалах</el-button>
+          </el-col>
+          <el-col :span="12" align="right">
+            <el-button
+              :loading="loadingDelete"
+              type="danger"
+              style="width: 50%;"
+              icon="el-icon-delete"
+              @click="confirm(userInfo.id)"
+            >Устгах
+            </el-button>
+          </el-col>
+        </el-row>
+      </el-form>
     </el-dialog>
 
     <el-dialog :visible.sync="isVisibleTimelog" width="40%">
@@ -193,7 +362,11 @@
 import axios from 'axios'
 import moment from 'moment'
 import rooms from '@/assets/static/rooms.json'
+import letters from '@/assets/static/letters.json'
+import departments from '@/assets/static/deps.json'
+import jobTitles from '@/assets/static/jobTitles.json'
 import { createTimelog } from '@/api/timelog'
+import { deleteById, updateCustomerById } from '@/api/user'
 const today = new Date()
 export default {
   filters: {
@@ -217,12 +390,32 @@ export default {
         keyId: '',
         isActive: true
       },
+      userInfo: {
+        id: null,
+        lastname: '',
+        firstname: '',
+        passportId: {
+          letter1: 'А',
+          letter2: 'А'
+        },
+        passportNumber: '',
+        birthdate: new Date('January 1, 2002'),
+        gender: 'male',
+        department: null,
+        jobTitle: '',
+        phoneNumber: null,
+        email: '',
+        testedDate: new Date(),
+        expiryDate: today.setMonth(today.getMonth() + 3),
+        fields: []
+      },
       activeName: 'first',
       search: '',
       list: [],
       isVisibleTimelog: false,
       isVisibleEdit: false,
       loading: false,
+      loadingDelete: false,
       listLoading: true,
       optionsRoom: rooms,
       rules: {
@@ -232,15 +425,164 @@ export default {
         exitTime: [
           { required: true, message: 'Цагийг оруулна уу!', trigger: 'blur' }
         ]
-      }
+      },
+      userRules: {
+        name: [
+          { required: true, message: 'Хүний нэр оруулна уу!', trigger: 'blur' },
+          { min: 2, max: 41, message: 'Хэт богино байна!', trigger: ['blur', 'change'] },
+          { type: 'string', message: 'Зөвхөн тэмдэгт байна!', trigger: ['blur', 'change'] }
+        ],
+        email: [
+          { required: true, message: 'Имейл хаяг оруулна уу!', trigger: 'blur' },
+          { type: 'email', message: 'Формат буруу байна!', trigger: ['blur', 'change'] }
+        ],
+        birthdate: [
+          { required: true, message: 'Огноог оруулна уу!', trigger: 'blur' },
+          { type: 'date', message: 'Зөвхөн огноо байх ёстой!', trigger: ['blur', 'change'] }
+        ],
+        phoneNumber: [
+          { required: true, message: 'Утасны дугаар оруулна уу!', trigger: 'blur' },
+          { min: 8, message: 'Хэт богино байна!', trigger: ['blur', 'change'] },
+          { max: 8, message: 'Урт байна!', trigger: ['blur', 'change'] },
+          { pattern: /^[0-9 -_]{1,11}$/, message: 'Зөвхөн тоо байна!', trigger: ['blur', 'change'] }
+        ],
+        passportNumber: [
+          { required: true, message: 'Регистерийн дугаар оруулна уу!', trigger: 'blur' },
+          { min: 8, message: 'Дутуу байна!', trigger: ['blur', 'change'] },
+          { max: 8, message: 'Урт байна!', trigger: ['blur', 'change'] },
+          { pattern: /^[0-9 -_]{1,11}$/, message: 'Зөвхөн тоо байна!', trigger: ['blur', 'change'] }
+        ],
+        testedDate: [
+          { required: true, message: 'Огноог оруулна уу!', trigger: 'blur' },
+          { type: 'date', message: 'Зөвхөн огноо байх ёстой!', trigger: ['blur', 'change'] }
+        ],
+        department: [
+          { required: true, message: 'Алба нэгжийн мэдээлэл оруулна уу!', trigger: 'blur' },
+          { pattern: /^[0-9 -_]{1,11}$/, message: 'Зөвхөн тоо байна!', trigger: ['blur', 'change'] }
+        ],
+        jobTitle: [
+          { required: true, message: 'Албан тушаалын мэдээлэл оруулна уу!', trigger: 'blur' }
+        ]
+      },
+      optionsDepartment: departments,
+      optionsJobTitle: jobTitles,
+      optionsGender: [
+        {
+          value: 'male',
+          label: 'Эрэгтэй'
+        },
+        {
+          value: 'female',
+          label: 'Эмэгтэй'
+        }
+      ],
+      letters: letters
     }
   },
   created() {
     this.fetchCustomers()
   },
   methods: {
+    onSave(userInfo) {
+      this.$refs[userInfo].validate((valid) => {
+        if (valid) {
+          this.loading = true
+          const customerId = `${this.userInfo.passportId.letter1 + this.userInfo.passportId.letter2 + this.userInfo.passportNumber.trim()}`
+          this.$message('Хадгалж болно!')
+          return new Promise((resolve, reject) => {
+            updateCustomerById({
+              id: this.userInfo.id,
+              firstname: this.userInfo.firstname.trim(),
+              lastname: this.userInfo.lastname.trim(),
+              customerId: customerId,
+              gender: this.userInfo.gender,
+              email: this.userInfo.email.trim(),
+              birthdate: this.userInfo.birthdate,
+              department: this.userInfo.department,
+              jobTitle: this.userInfo.jobTitle,
+              testedDate: this.userInfo.testedDate,
+              phoneNumber: this.userInfo.phoneNumber.trim()
+            }).then(response => {
+              console.log(response)
+              this.loading = false
+              this.$message({
+                message: 'Амжилттай хадгалав.',
+                type: 'success'
+              })
+              this.isVisibleEdit = false
+              this.fetchCustomers()
+              resolve()
+            }).catch(error => {
+              console.log(error)
+              this.loading = false
+              this.$message({
+                message: 'Хадгалах хүсэлт амжилтгүй боллоо.',
+                type: 'warning'
+              })
+            })
+          })
+        } else {
+          console.log('Passportid: ', `${this.userInfo.passportId.letter1 + this.userInfo.passportId.letter2 + this.userInfo.passportNumber}`)
+          console.log('Validation fail')
+          this.$message('Буруу эсвэл дутуу мэдээлэл оруулсан байна!')
+          return false
+        }
+      })
+    },
+    confirm(id) {
+      this.$alert('Та зөвшөөрч байна уу?', 'Зөвшөөрөл', {
+        confirmButtonText: 'Тийм',
+        cancelButtonText: 'Үгүй',
+        type: 'warning'
+      }).then(() => {
+        this.onDelete(id)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: 'Цуцлагдлаа'
+        })
+      })
+    },
+    onDelete(id) {
+      return new Promise((resolve, reject) => {
+        this.loadingDelete = true
+        deleteById({
+          id: id
+        }).then(response => {
+          console.log(response)
+          this.loading = false
+          this.$message({
+            message: 'Амжилттай устгалаа.',
+            type: 'success'
+          })
+          this.fetchCustomers()
+          this.isVisibleEdit = false
+          resolve()
+        }).catch(error => {
+          console.log(error)
+          this.loadingDelete = false
+          this.$message({
+            message: 'Устгах хүсэлт амжилтгүй боллоо.',
+            type: 'warning'
+          })
+        })
+      })
+    },
     chooseCustomerToEdit(index, row) {
+      console.log('ID: ', row.id)
       this.isVisibleEdit = true
+      this.userInfo.id = row.id
+      this.userInfo.firstname = row.firstname
+      this.userInfo.lastname = row.lastname
+      this.userInfo.gender = row.gender === 'male' ? 'male' : 'female'
+      this.userInfo.phoneNumber = row.phoneNumber
+      this.userInfo.email = row.email
+      this.userInfo.passportId.letter1 = row.customerId[0]
+      this.userInfo.passportId.letter2 = row.customerId[1]
+      this.userInfo.passportNumber = row.customerId.substring(2, 10)
+      this.userInfo.department = row.department
+      this.userInfo.jobTitle = row.jobTitle
+      this.userInfo.birthdate = this.extractBirthdate(row.customerId)
     },
     chooseCustomerToTimelog(index, row) {
       console.log('Me chosen: ', row)
@@ -313,6 +655,14 @@ export default {
         type: 'warning'
       })
     },
+    departmentFilter(department) {
+      const res = this.optionsDepartment.filter(v => v.id === department)
+      if (res.length > 0) {
+        return res[0].name
+      } else {
+        return 'Мэдээлэл байхгүй'
+      }
+    },
     genderFilter(gender) {
       switch (gender) {
         case 'male':
@@ -322,6 +672,28 @@ export default {
         default:
           return 'Эр'
       }
+    },
+    extractBirthdate(register) {
+      let year
+      let month
+      let day
+      if (register.length === 10 && register != null) {
+        if (register[4] === '2' || register[4] === '3') {
+          year = '20'.concat(register.substring(2, 4))
+          month = (parseInt(register.substring(4, 6)) - 20).toString()
+        } else {
+          year = '19'.concat(register.substring(2, 4))
+          month = register.substring(4, 6)
+        }
+        day = register.substring(6, 8)
+        console.log('Conversion %s %s %s', year, month, day)
+        return new Date(`${month}/${day}/${year}`)
+      } else {
+        return null
+      }
+    },
+    triggerExtractDate(passportNumber) {
+      this.userInfo.birthdate = this.extractBirthdate('AA'.concat(passportNumber))
     },
     displayDate: function(date) {
       moment.locales('mn')
