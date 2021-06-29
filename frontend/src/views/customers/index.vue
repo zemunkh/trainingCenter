@@ -55,7 +55,12 @@
           </el-table-column>
           <el-table-column label="Шинжилгээ хүчинтэй огноо" width="150" align="center">
             <template slot-scope="scope">
-              {{ displayDate(scope.row.testedDate) }}
+              <el-tag
+                :type="dateCheck(scope.row.testedDate) ? 'success' : 'danger'"
+                disable-transitions
+              >
+                {{ displayDate(scope.row.testedDate) }}
+              </el-tag>
             </template>
           </el-table-column>
           <el-table-column label="Утасны дугаар" align="center">
@@ -264,7 +269,7 @@
       </el-form>
     </el-dialog>
 
-    <el-dialog :visible.sync="isVisibleTimelog" width="40%">
+    <el-dialog :visible.sync="isVisibleTimelog" width="50%">
       <el-form ref="timelog" :model="timelog" label-width="120px">
         <el-row>
           <el-col>
@@ -335,7 +340,7 @@
         </el-row>
         <br>
         <el-row>
-          <el-col>
+          <el-col align="center">
             <el-button
               size="mini"
               :loading="loading"
@@ -346,12 +351,49 @@
             </el-button>
           </el-col>
         </el-row>
-        <el-row>
-          <el-col>
-            Хүснэгт
-          </el-col>
-        </el-row>
       </el-form>
+
+      <br>
+
+      <el-row>
+        <el-col align="center">
+          <el-table
+            v-loading="timelogLoading"
+            :data="timelogList"
+            stripe
+            element-loading-text="Loading"
+            border
+            fit
+            highlight-current-row
+          >
+            <el-table-column align="center" label="ID" width="80">
+              <template slot-scope="scope">
+                {{ scope.$index }}
+              </template>
+            </el-table-column>
+            <el-table-column label="Орсон цаг" width="120" align="center">
+              <template slot-scope="scope">
+                {{ displayDate(scope.row.entryTime) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="Орсон цаг" width="120" align="center">
+              <template slot-scope="scope">
+                {{ displayTime(scope.row.entryTime) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="Гарсан цаг" width="120" align="center">
+              <template slot-scope="scope">
+                {{ displayTime(scope.row.exitTime) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="Танхим" align="center">
+              <template slot-scope="scope">
+                {{ roomFilter(scope.row.roomId) }}
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-col>
+      </el-row>
     </el-dialog>
 
   </div>
@@ -365,9 +407,10 @@ import rooms from '@/assets/static/rooms.json'
 import letters from '@/assets/static/letters.json'
 import departments from '@/assets/static/deps.json'
 import jobTitles from '@/assets/static/jobTitles.json'
-import { createTimelog } from '@/api/timelog'
+import { createTimelog, fetchTimelogByCustomerId } from '@/api/timelog'
 import { deleteById, updateCustomerById } from '@/api/user'
 const today = new Date()
+const today1 = new Date()
 export default {
   filters: {
     statusFilter(status) {
@@ -406,17 +449,19 @@ export default {
         phoneNumber: null,
         email: '',
         testedDate: new Date(),
-        expiryDate: today.setMonth(today.getMonth() + 3),
+        expiryDate: today1.setMonth(today1.getMonth() + 3),
         fields: []
       },
       activeName: 'first',
       search: '',
       list: [],
+      timelogList: [],
       isVisibleTimelog: false,
       isVisibleEdit: false,
       loading: false,
       loadingDelete: false,
       listLoading: true,
+      timelogLoading: false,
       optionsRoom: rooms,
       rules: {
         entryTime: [
@@ -576,6 +621,7 @@ export default {
       this.userInfo.lastname = row.lastname
       this.userInfo.gender = row.gender === 'male' ? 'male' : 'female'
       this.userInfo.phoneNumber = row.phoneNumber
+      this.userInfo.testedDate = new Date(row.testedDate)
       this.userInfo.email = row.email
       this.userInfo.passportId.letter1 = row.customerId[0]
       this.userInfo.passportId.letter2 = row.customerId[1]
@@ -589,17 +635,17 @@ export default {
       this.timelog.customerId = row.id
       this.timelog.name = `${row.lastname.length > 1 ? row.lastname.substring(0, 2) : row.lastname}. ${row.firstname}`
       this.isVisibleTimelog = true
+      this.timelogList = null
+      this.fetchTimelogs(row.id)
     },
     registerTime(timelogForm) {
-      console.log('Entry time: ', this.timelog.entryTime)
-      console.log('Exit time: ', this.timelog.exitTime)
       const year = today.getFullYear()
       const month = today.getMonth()
       const date = today.getDate()
-      const entryTime = new Date(`${month + 1}/${date}/${year} ${this.timelog.entryTime}`)
-      const exitTime = new Date(`${month + 1}/${date}/${year} ${this.timelog.exitTime}`)
-      console.log('Converted Entry date: ', entryTime)
-      console.log('Converted Exit date: ', exitTime)
+      const entryTime = new Date(`${year}-${month + 1}-${date} ${this.timelog.entryTime}`)
+      const exitTime = new Date(`${year}-${month + 1}-${date} ${this.timelog.exitTime}`)
+      // console.log('Converted Entry date: ', entryTime)
+      // console.log('Converted Exit date: ', exitTime)
       this.$refs[timelogForm].validate((valid) => {
         if (valid) {
           this.loading = true
@@ -649,6 +695,27 @@ export default {
         this.listLoading = false
       })
     },
+    fetchTimelogs(id) {
+      this.timelogLoading = true
+      return new Promise((resolve, reject) => {
+        console.log('Customer ID: ', id)
+        fetchTimelogByCustomerId({
+          customerId: id
+        }).then(response => {
+          console.log(response)
+          this.timelogList = response
+          this.timelogLoading = false
+          resolve()
+        }).catch(error => {
+          console.log(error)
+          this.timelogLoading = false
+          this.$message({
+            message: 'Таталт амжилтгүй.',
+            type: 'warning'
+          })
+        })
+      })
+    },
     onCancel() {
       this.$message({
         message: 'cancel!',
@@ -661,6 +728,14 @@ export default {
         return res[0].name
       } else {
         return 'Мэдээлэл байхгүй'
+      }
+    },
+    roomFilter(roomId) {
+      const res = this.optionsRoom.filter(v => v.value === roomId)
+      if (res.length > 0) {
+        return res[0].label
+      } else {
+        return this.optionsRoom[0].label
       }
     },
     genderFilter(gender) {
@@ -686,7 +761,7 @@ export default {
           month = register.substring(4, 6)
         }
         day = register.substring(6, 8)
-        console.log('Conversion %s %s %s', year, month, day)
+        // console.log('Conversion %s %s %s', year, month, day)
         return new Date(`${month}/${day}/${year}`)
       } else {
         return null
@@ -694,6 +769,22 @@ export default {
     },
     triggerExtractDate(passportNumber) {
       this.userInfo.birthdate = this.extractBirthdate('AA'.concat(passportNumber))
+    },
+    dateCheck: function(date) {
+      const testDate = new Date(date)
+      const d = new Date()
+      const to = new Date().getTime()
+      const from = d.setMonth(d.getMonth() - 3)
+      // console.log('Converted to: ', new Date(to))
+      // console.log('Converted from: ', new Date(from))
+      // console.log('Tested date: ', testDate)
+      if (testDate.getTime() >= from && testDate.getTime() <= to) {
+        return true
+      } else return false
+    },
+    displayTime: function(date) {
+      const d = new Date(date)
+      return moment(d).format('HH:mm')
     },
     displayDate: function(date) {
       moment.locales('mn')

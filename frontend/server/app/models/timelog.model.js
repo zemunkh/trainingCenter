@@ -12,7 +12,7 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.DATE,
         },
         roomId: {
-            type: Sequelize.STRING,
+            type: Sequelize.INTEGER,
         },
         lockerNumber: {
             type: Sequelize.STRING,
