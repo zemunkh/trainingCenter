@@ -35,10 +35,11 @@ export async function fetchCustomerByFirstname(data) {
 }
 
 export async function fetchCustomerById(data) {
-  const response = await fetch('/api/customers?' +
-  new URLSearchParams({
-    customerId: data.customerId
-  }))
+  const response = await fetch(`/api/customers/get`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
   return await response.json()
 }
 

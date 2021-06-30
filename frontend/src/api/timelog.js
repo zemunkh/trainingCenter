@@ -9,6 +9,14 @@ export async function createTimelog(data) {
   return await response.json()
 }
 
+export async function fetchTimelogAll(data) {
+  const response = await fetch('/api/timelogs/timelog?' +
+  new URLSearchParams({
+    timelogId: data.timelogId
+  }))
+  return await response.json()
+}
+
 export async function fetchTimelogById(data) {
   const response = await fetch('/api/timelogs/timelog?' +
   new URLSearchParams({
@@ -26,6 +34,15 @@ export async function fetchTimelogByCustomerId(data) {
   return await response.json()
 }
 
+export async function fetchTimelogByCustomerIdActive(data) {
+  const response = await fetch(`/api/timelogs/search/customer/active`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  return await response.json()
+}
+
 export async function fetchTimelogByRoomId(data) {
   const response = await fetch(`/api/timelogs/search/room`, {
     method: 'POST',
@@ -35,8 +52,26 @@ export async function fetchTimelogByRoomId(data) {
   return await response.json()
 }
 
-export async function fetchTimelogByDate(data) {
-  const response = await fetch(`/api/timelogs/search/room/date`, {
+export async function fetchTimelogRoomDateRange(data) {
+  const response = await fetch(`/api/timelogs/search/room/range`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  return await response.json()
+}
+
+export async function fetchActiveTimelogByRoom(data) {
+  const response = await fetch(`/api/timelogs/search/room/active`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  return await response.json()
+}
+
+export async function fetchActiveTimelog(data) {
+  const response = await fetch(`/api/timelogs/search/active`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
@@ -53,12 +88,18 @@ export async function updateTimelogById(data) {
   return await response.json()
 }
 
+export async function deleteTimelogByCustomerId(data) {
+  const response = await fetch(`/api/timelogs/delete/customerId`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  return await response.json()
+}
+
 export async function deleteTimelog(data) {
-  const response = await fetch('/api/timelogs/' +
-  new URLSearchParams({
-    timelogId: data.timelogId
-  }), {
-    method: 'DELETE',
+  const response = await fetch(`/api/timelogs/delete`, {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data)
   })

@@ -9,6 +9,11 @@ exports.create = (req, res) => {
 		firstname: req.body.firstname,
 		lastname: req.body.lastname,
 		gender: req.body.gender,
+		courtTime: req.body.courtTime,
+		poolTime: req.body.poolTime,
+		fitnessTime: req.body.fitnessTime,
+		aeroTime: req.body.aeroTime,
+		subTime: req.body.subTime,
 		email: req.body.email,
         birthdate: req.body.birthdate,  // new Date(1980, 6, 20)
         department: req.body.department,
@@ -35,10 +40,18 @@ exports.findAll = (req, res) => {
 };
  
 // Find a Customer by Id
-exports.findById = (req, res) => {	
-	Customer.findById(req.params.customerId).then(customer => {
-		res.status(200).send(customer);
-	}).catch(err => {
+exports.findById = (req, res) => {
+	const id = req.body.customerId;
+	console.log('Customer id is! ', id);
+	Customer.findAll({
+		where: {
+			id: id
+		}
+	}).then(
+		customers => {
+			res.send(customers)
+		}
+	).catch(err => {
 		res.status(500).send("Error -> " + err);
 	})
 };
@@ -68,6 +81,11 @@ exports.update = (req, res) => {
 		firstname: req.body.firstname,
 		lastname: req.body.lastname,
 		gender: req.body.gender,
+		courtTime: req.body.courtTime,
+		poolTime: req.body.poolTime,
+		fitnessTime: req.body.fitnessTime,
+		aeroTime: req.body.aeroTime,
+		subTime: req.body.subTime,
 		email: req.body.email,
         birthdate: req.body.birthdate,  // new Date(1980, 6, 20)
         department: req.body.department,

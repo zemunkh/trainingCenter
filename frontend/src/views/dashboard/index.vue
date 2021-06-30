@@ -5,35 +5,41 @@
     <el-row :gutter="20">
       <el-col :span="8" align="center">
         <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span><b>{{ optionsRoom[0].label.toUpperCase() }}</b></span>
+          </div>
           <el-progress
             type="dashboard"
             :percentage="percentage_court"
             :color="colors"
           />
           <h4 align="center">{{ `${activeUsers_court}/${capacity_court}` }}</h4>
-          <h3>{{ optionsRoom[0].label.toUpperCase() }}</h3>
         </el-card>
       </el-col>
       <el-col :span="8" align="center">
         <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span><b>{{ optionsRoom[1].label.toUpperCase() }}</b></span>
+          </div>
           <el-progress
             type="dashboard"
             :percentage="percentage_pool"
             :color="colors"
           />
           <h4 align="center">{{ `${activeUsers_pool}/${capacity_pool}` }}</h4>
-          <h3>{{ optionsRoom[1].label }}</h3>
         </el-card>
       </el-col>
       <el-col :span="8" align="center">
         <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span><b>{{ optionsRoom[2].label.toUpperCase() }}</b></span>
+          </div>
           <el-progress
             type="dashboard"
             :percentage="percentage_fitness"
             :color="colors"
           />
           <h4 align="center">{{ `${activeUsers_fitness}/${capacity_fitness}` }}</h4>
-          <h3>{{ optionsRoom[2].label }}</h3>
         </el-card>
       </el-col>
     </el-row>
@@ -41,24 +47,28 @@
     <el-row :gutter="20">
       <el-col :span="12" align="center">
         <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span><b>{{ optionsRoom[3].label.toUpperCase() }}</b></span>
+          </div>
           <el-progress
             type="dashboard"
             :percentage="percentage_aero"
             :color="colors"
           />
           <h4 align="center">{{ `${activeUsers_aero}/${capacity_aero}` }}</h4>
-          <h3>{{ optionsRoom[3].label }}</h3>
         </el-card>
       </el-col>
       <el-col :span="12" align="center">
         <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span><b>{{ optionsRoom[4].label.toUpperCase() }}</b></span>
+          </div>
           <el-progress
             type="dashboard"
             :percentage="percentage_sub"
             :color="colors"
           />
-          <h4 align="center">{{ `${activeUsers_pool}/${capacity_sub}` }}</h4>
-          <h3>{{ optionsRoom[4].label }}</h3>
+          <h4 align="center">{{ `${activeUsers_sub}/${capacity_sub}` }}</h4>
         </el-card>
       </el-col>
     </el-row>
@@ -69,37 +79,38 @@
 <script>
 import { mapGetters } from 'vuex'
 import rooms from '@/assets/static/rooms.json'
-import { fetchTimelogByRoomId } from '@/api/timelog'
+import { fetchActiveTimelog } from '@/api/timelog'
 export default {
   name: 'Dashboard',
   data() {
     return {
       percentage_court: 10,
       activeUsers_court: 0,
-      capacity_court: 30,
+      capacity_court: rooms[0].max,
 
       percentage_pool: 10,
       activeUsers_pool: 0,
-      capacity_pool: 40,
+      capacity_pool: rooms[1].max,
 
       percentage_fitness: 10,
       activeUsers_fitness: 0,
-      capacity_fitness: 30,
+      capacity_fitness: rooms[2].max,
 
       percentage_aero: 10,
       activeUsers_aero: 0,
-      capacity_aero: 20,
+      capacity_aero: rooms[3].max,
 
       percentage_sub: 10,
       activeUsers_sub: 0,
-      capacity_sub: 20,
+      capacity_sub: rooms[4].max,
       optionsRoom: rooms,
+      loading: false,
       colors: [
-        { color: '#f56c6c', percentage: 20 },
-        { color: '#e6a23c', percentage: 40 },
+        { color: '#6f7ad3', percentage: 20 },
+        { color: '#1989fa', percentage: 40 },
         { color: '#5cb87a', percentage: 60 },
-        { color: '#1989fa', percentage: 80 },
-        { color: '#6f7ad3', percentage: 100 }
+        { color: '#e6a23c', percentage: 80 },
+        { color: '#f56c6c', percentage: 100 }
       ]
     }
   },
@@ -113,15 +124,12 @@ export default {
   },
   methods: {
     fetchTimelogs() {
+      this.loading = true
       return new Promise((resolve, reject) => {
-        fetchTimelogByRoomId({
-          roomId: 0
-        }).then(response => {
-          console.log(response)
+        fetchActiveTimelog().then(response => {
           this.loading = false
-          console.log('Response: ', response)
-          this.list = response
-          this.getActiveUsers(response)
+          console.log('Len: ', response.length)
+          this.setActiveUsers(response)
           resolve()
         }).catch(error => {
           console.log(error)
@@ -132,6 +140,36 @@ export default {
           })
         })
       })
+    },
+    setActiveUsers(timelogs) {
+      if (timelogs.length > 0) {
+        timelogs.forEach(timelog => {
+          switch (timelog.roomId) {
+            case rooms[0].value:
+              this.activeUsers_court++
+              break
+            case rooms[1].value:
+              this.activeUsers_pool++
+              break
+            case rooms[2].value:
+              this.activeUsers_fitness++
+              break
+            case rooms[3].value:
+              this.activeUsers_aero++
+              break
+            case rooms[4].value:
+              this.activeUsers_sub++
+              break
+            default:
+              break
+          }
+        })
+      }
+      this.percentage_court = Math.ceil(this.activeUsers_court * 100 / this.capacity_court)
+      this.percentage_pool = Math.ceil(this.activeUsers_pool * 100 / this.capacity_pool)
+      this.percentage_fitness = Math.ceil(this.activeUsers_fitness * 100 / this.capacity_fitness)
+      this.percentage_aero = Math.ceil(this.activeUsers_aero * 100 / this.capacity_aero)
+      this.percentage_sub = Math.ceil(this.activeUsers_sub * 100 / this.capacity_sub)
     }
   }
 }

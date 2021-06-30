@@ -28,22 +28,22 @@
               {{ scope.$index }}
             </template>
           </el-table-column>
-          <el-table-column label="Овог" width="80" align="center">
+          <el-table-column label="Овог" prop="lastname" sortable width="80" align="center">
             <template slot-scope="scope">
               {{ scope.row.lastname.length > 1 ? scope.row.lastname.substring(0, 2) : scope.row.lastname }}
             </template>
           </el-table-column>
-          <el-table-column label="Нэр" width="150" align="center">
+          <el-table-column label="Нэр" prop="firstname" sortable width="150" align="center">
             <template slot-scope="scope">
               {{ scope.row.firstname }}
             </template>
           </el-table-column>
-          <el-table-column label="Нас" width="110" align="center">
+          <el-table-column label="Нас" prop="birthdate" sortable width="110" align="center">
             <template slot-scope="scope">
               {{ displayYear(scope.row.birthdate) }}
             </template>
           </el-table-column>
-          <el-table-column label="Хүйс" width="90" align="center">
+          <el-table-column label="Хүйс" prop="gender" sortable width="90" align="center">
             <template slot-scope="scope">
               {{ genderFilter(scope.row.gender) }}
             </template>
@@ -63,9 +63,9 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="Утасны дугаар" align="center">
+          <el-table-column label="Нийт цаг" align="center">
             <template slot-scope="scope">
-              {{ scope.row.phoneNumber }}
+              {{ scope.row.courtTime + scope.row.poolTime + scope.row.fitnessTime + scope.row.aeroTime + scope.row.subTime }} цаг
             </template>
           </el-table-column>
           <el-table-column label="Үйлдэл" align="center">
@@ -269,7 +269,7 @@
       </el-form>
     </el-dialog>
 
-    <el-dialog :visible.sync="isVisibleTimelog" width="50%">
+    <el-dialog :visible.sync="isVisibleTimelog" width="60%">
       <el-form ref="timelog" :model="timelog" label-width="120px">
         <el-row>
           <el-col>
@@ -277,7 +277,7 @@
               prop="name"
               label="Нэр"
             >
-              <span>{{ timelog.name }}</span>
+              <span>{{ timelog.customerName }}</span>
             </el-form-item>
           </el-col>
         </el-row>
@@ -330,7 +330,8 @@
                 :picker-options="{
                   start: '07:00',
                   step: '01:00',
-                  end: '23:00'
+                  end: '23:00',
+                  minTime: timelog.entryTime
                 }"
                 placeholder="Цаг сонгох"
                 style="width: 100%;"
@@ -391,6 +392,28 @@
                 {{ roomFilter(scope.row.roomId) }}
               </template>
             </el-table-column>
+            <el-table-column label="Төлөв" align="center" prop="isActive" sortable>
+              <template slot-scope="scope">
+                <el-tag
+                  :type="scope.row.isActive ? 'success' : 'info'"
+                  disable-transitions
+                >
+                  {{ scope.row.isActive ? 'Идэвхтэй' : 'Идэвхгүй' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="Үйлдэл" align="center">
+              <template slot-scope="scope">
+                <el-button
+                  :loading="loading"
+                  type="primary"
+                  plain
+                  :disabled="!scope.row.isActive"
+                  @click="registerExit(scope.row)"
+                >{{ scope.row.isActive ? 'Гарсан' : 'Байхгүй' }}
+                </el-button>
+              </template>
+            </el-table-column>
           </el-table>
         </el-col>
       </el-row>
@@ -407,7 +430,7 @@ import rooms from '@/assets/static/rooms.json'
 import letters from '@/assets/static/letters.json'
 import departments from '@/assets/static/deps.json'
 import jobTitles from '@/assets/static/jobTitles.json'
-import { createTimelog, fetchTimelogByCustomerId } from '@/api/timelog'
+import { createTimelog, updateTimelogById, fetchTimelogByCustomerId, fetchActiveTimelogByRoom, fetchTimelogByCustomerIdActive, deleteTimelogByCustomerId } from '@/api/timelog'
 import { deleteById, updateCustomerById } from '@/api/user'
 const today = new Date()
 const today1 = new Date()
@@ -425,9 +448,9 @@ export default {
   data() {
     return {
       timelog: {
-        name: '',
         customerId: '',
-        roomId: 3,
+        customerName: '',
+        roomId: 0,
         entryTime: '',
         exitTime: '',
         keyId: '',
@@ -444,6 +467,11 @@ export default {
         passportNumber: '',
         birthdate: new Date('January 1, 2002'),
         gender: 'male',
+        courtTime: 0,
+        poolTime: 0,
+        fitnessTime: 0,
+        aeroTime: 0,
+        subTime: 0,
         department: null,
         jobTitle: '',
         phoneNumber: null,
@@ -548,7 +576,7 @@ export default {
               testedDate: this.userInfo.testedDate,
               phoneNumber: this.userInfo.phoneNumber.trim()
             }).then(response => {
-              console.log(response)
+              // console.log(response)
               this.loading = false
               this.$message({
                 message: 'Амжилттай хадгалав.',
@@ -567,11 +595,112 @@ export default {
             })
           })
         } else {
-          console.log('Passportid: ', `${this.userInfo.passportId.letter1 + this.userInfo.passportId.letter2 + this.userInfo.passportNumber}`)
+          // console.log('Passportid: ', `${this.userInfo.passportId.letter1 + this.userInfo.passportId.letter2 + this.userInfo.passportNumber}`)
           console.log('Validation fail')
           this.$message('Буруу эсвэл дутуу мэдээлэл оруулсан байна!')
           return false
         }
+      })
+    },
+    registerExit(row) {
+      this.$alert('Та зөвшөөрч байна уу?', 'Зөвшөөрөл', {
+        confirmButtonText: 'Тийм',
+        cancelButtonText: 'Үгүй',
+        type: 'warning'
+      }).then(() => {
+        this.updateStatus(row)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: 'Цуцлагдлаа'
+        })
+      })
+    },
+    updateStatus(row) {
+      return new Promise((resolve, reject) => {
+        console.log('Row: ', row)
+        updateTimelogById({
+          id: row.id,
+          isActive: false,
+          exitTime: new Date()
+        }).then(response => {
+          this.loading = false
+          // console.log('Response: ', response)
+          this.updateCustomerUsage(row)
+          this.$message({
+            message: 'Амжилттай хадгалав.',
+            type: 'success'
+          })
+          this.fetchTimelogs(row.customerId)
+          // this.list = response.data
+          resolve()
+        }).catch(error => {
+          console.log(error)
+          this.loading = false
+          this.$message({
+            message: 'Цагийн мэдээлэл амжилтгүй татагдлаа.',
+            type: 'warning'
+          })
+        })
+      })
+    },
+    updateCustomerUsage(timelog) {
+      console.log('Room: ', timelog)
+      let data = null
+      const startTime = new Date(timelog.entryTime)
+      const endTime = new Date(timelog.exitTime)
+      const hours = Math.abs(Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60)))
+      console.log('Хичээллэсэн цаг: ', hours)
+      switch (timelog.roomId) {
+        case this.optionsRoom[0].value:
+          data = {
+            id: timelog.customerId,
+            courtTime: this.userInfo.courtTime + hours
+          }
+          break
+        case this.optionsRoom[1].value:
+          data = {
+            id: timelog.customerId,
+            poolTime: this.userInfo.poolTime + hours
+          }
+          break
+        case this.optionsRoom[2].value:
+          data = {
+            id: timelog.customerId,
+            fitnessTime: this.userInfo.fitnessTime + hours
+          }
+          break
+        case this.optionsRoom[3].value:
+          data = {
+            id: timelog.customerId,
+            aeroTime: this.userInfo.aeroTime + hours
+          }
+          break
+        case this.optionsRoom[4].value:
+          data = {
+            id: timelog.customerId,
+            subTime: this.userInfo.subTime + hours
+          }
+          break
+        default:
+          break
+      }
+      console.log('Data: ', data)
+      return new Promise((resolve, reject) => {
+        updateCustomerById(data).then(response => {
+          console.log('Res: ', response)
+          this.$message({
+            message: 'Цагийн мэдээллийг амжилттай шинэчлэв.',
+            type: 'success'
+          })
+          resolve()
+        }).catch(error => {
+          console.log(error)
+          this.$message({
+            message: 'Шинэчлэх хүсэлт амжилтгүй боллоо.',
+            type: 'warning'
+          })
+        })
       })
     },
     confirm(id) {
@@ -594,15 +723,29 @@ export default {
         deleteById({
           id: id
         }).then(response => {
-          console.log(response)
-          this.loading = false
-          this.$message({
-            message: 'Амжилттай устгалаа.',
-            type: 'success'
-          })
-          this.fetchCustomers()
-          this.isVisibleEdit = false
           resolve()
+          return new Promise((resolve, reject) => {
+            deleteTimelogByCustomerId({
+              customerId: id
+            }).then(response => {
+              // console.log(response)
+              this.loading = false
+              this.$message({
+                message: 'Амжилттай устгалаа.',
+                type: 'success'
+              })
+              this.fetchCustomers()
+              this.isVisibleEdit = false
+              resolve()
+            }).catch(error => {
+              console.log(error)
+              this.loadingDelete = false
+              this.$message({
+                message: 'Цагийн бүртгэл устгахад алдаа гарлаа.',
+                type: 'warning'
+              })
+            })
+          })
         }).catch(error => {
           console.log(error)
           this.loadingDelete = false
@@ -614,7 +757,7 @@ export default {
       })
     },
     chooseCustomerToEdit(index, row) {
-      console.log('ID: ', row.id)
+      // console.log('ID: ', row.id)
       this.isVisibleEdit = true
       this.userInfo.id = row.id
       this.userInfo.firstname = row.firstname
@@ -629,16 +772,22 @@ export default {
       this.userInfo.department = row.department
       this.userInfo.jobTitle = row.jobTitle
       this.userInfo.birthdate = this.extractBirthdate(row.customerId)
+      this.userInfo.courtTime = row.courtTime
+      this.userInfo.poolTime = row.poolTime
+      this.userInfo.fitnessTime = row.fitnessTime
+      this.userInfo.aeroTime = row.aeroTime
+      this.userInfo.subTime = row.subTime
     },
     chooseCustomerToTimelog(index, row) {
-      console.log('Me chosen: ', row)
+      // console.log('Me chosen: ', row)
       this.timelog.customerId = row.id
-      this.timelog.name = `${row.lastname.length > 1 ? row.lastname.substring(0, 2) : row.lastname}. ${row.firstname}`
+      this.timelog.customerName = `${row.lastname.length > 1 ? row.lastname.substring(0, 2) : row.lastname}. ${row.firstname}`
       this.isVisibleTimelog = true
       this.timelogList = null
       this.fetchTimelogs(row.id)
     },
     registerTime(timelogForm) {
+      let activerUsersNum = 0
       const year = today.getFullYear()
       const month = today.getMonth()
       const date = today.getDate()
@@ -650,27 +799,76 @@ export default {
         if (valid) {
           this.loading = true
           return new Promise((resolve, reject) => {
-            createTimelog({
-              customerId: this.timelog.customerId,
-              entryTime: entryTime,
-              exitTime: exitTime,
-              roomId: this.timelog.roomId,
-              lockerNumber: '0',
-              isActive: true
+            fetchActiveTimelogByRoom({
+              roomId: this.timelog.roomId
             }).then(response => {
-              console.log(response)
-              this.loading = false
-              this.isVisibleTimelog = false
-              this.$message({
-                message: 'Амжилттай нэмэгдлээ.',
-                type: 'success'
-              })
+              activerUsersNum = response.length
+              // console.log('Active users/Capacity:  %s | %s', activerUsersNum, rooms[this.timelog.roomId].max)
+              if (activerUsersNum < rooms[this.timelog.roomId].max) {
+                return new Promise((resolve, reject) => {
+                  // console.log('Customer ID: ', this.timelog.customerId)
+                  fetchTimelogByCustomerIdActive({
+                    customerId: this.timelog.customerId
+                  }).then(timelogs => {
+                    // console.log(timelogs.length)
+                    if (timelogs.length > 0) {
+                      this.loading = false
+                      this.$message({
+                        message: 'Амжилтгүй. Идэвхтэй үйлчлүүлэгч',
+                        type: 'warning'
+                      })
+                    } else {
+                      return new Promise((resolve, reject) => {
+                        createTimelog({
+                          customerId: this.timelog.customerId,
+                          customerName: this.timelog.customerName,
+                          entryTime: entryTime,
+                          exitTime: exitTime,
+                          roomId: this.timelog.roomId,
+                          lockerNumber: '0',
+                          isActive: true
+                        }).then(response => {
+                          // console.log(response)
+                          this.loading = false
+                          this.isVisibleTimelog = false
+                          this.$message({
+                            message: 'Амжилттай нэмэгдлээ.',
+                            type: 'success'
+                          })
+                          resolve()
+                        }).catch(error => {
+                          console.log(error)
+                          this.loading = false
+                          this.$message({
+                            message: 'Хадгалах хүсэлт амжилтгүй боллоо.',
+                            type: 'warning'
+                          })
+                        })
+                      })
+                    }
+                    resolve()
+                  }).catch(error => {
+                    console.log(error)
+                    this.timelogLoading = false
+                    this.$message({
+                      message: 'Таталт амжилтгүй.',
+                      type: 'warning'
+                    })
+                  })
+                })
+              } else {
+                this.loading = false
+                this.$message({
+                  message: 'Заал дүүрсэн байна. Бүртгэх боломжгүй',
+                  type: 'warning'
+                })
+              }
               resolve()
             }).catch(error => {
               console.log(error)
               this.loading = false
               this.$message({
-                message: 'Хадгалах хүсэлт амжилтгүй боллоо.',
+                message: 'Цагийн мэдээлэл амжилтгүй татагдлаа.',
                 type: 'warning'
               })
             })
@@ -698,11 +896,11 @@ export default {
     fetchTimelogs(id) {
       this.timelogLoading = true
       return new Promise((resolve, reject) => {
-        console.log('Customer ID: ', id)
+        // console.log('Customer ID: ', id)
         fetchTimelogByCustomerId({
           customerId: id
         }).then(response => {
-          console.log(response)
+          // console.log(response)
           this.timelogList = response
           this.timelogLoading = false
           resolve()

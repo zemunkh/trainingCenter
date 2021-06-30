@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <h3>Спорт заал</h3>
+    <h1 align="center">Спорт заал</h1>
 
     <el-row>
       <el-col align="center">
@@ -29,9 +29,14 @@
           fit
           highlight-current-row
         >
-          <el-table-column align="center" label="ID" width="80">
+          <el-table-column align="center" label="ID" width="50">
             <template slot-scope="scope">
-              {{ scope.$index }}
+              {{ scope.$index + 1 }}
+            </template>
+          </el-table-column>
+          <el-table-column label="Нэр" prop="customerName" sortable width="220" align="center">
+            <template slot-scope="scope">
+              {{ scope.row.customerName }}
             </template>
           </el-table-column>
           <el-table-column label="Өдөр" prop="date" sortable width="120" align="center">
@@ -44,12 +49,12 @@
               {{ displayTime(scope.row.entryTime) }}
             </template>
           </el-table-column>
-          <el-table-column label="Гарсан цаг" prop="exitTime" sortable width="130" align="center">
+          <el-table-column label="Гарах цаг" prop="exitTime" sortable width="130" align="center">
             <template slot-scope="scope">
               {{ displayTime(scope.row.exitTime) }}
             </template>
           </el-table-column>
-          <el-table-column label="Төлөв" align="center" prop="isActive" sortable>
+          <el-table-column label="Төлөв" align="center" prop="isActive" sortable width="150">
             <template slot-scope="scope">
               <el-tag
                 :type="scope.row.isActive ? 'success' : 'danger'"
@@ -59,11 +64,11 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="Танхим" align="center">
+          <!-- <el-table-column label="Танхим" align="center">
             <template slot-scope="scope">
               {{ roomFilter(scope.row.roomId) }}
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <el-table-column label="Үйлдэл" align="center">
             <template slot-scope="scope">
               <el-button
@@ -83,14 +88,20 @@
       <el-col align="center">
         <div class="block">
           <h3>Өдөр сонгож хайх</h3>
-          <el-date-picker
-            v-model="filterDate"
-            type="date"
-            placeholder="Өдөр сонгох"
-          />
+          <div class="block">
+            <el-date-picker
+              v-model="dateRange"
+              type="daterange"
+              range-separator="-с"
+              start-placeholder="Эхлэх огноо"
+              end-placeholder="Дуусах огноо"
+              @change="rangePicked()"
+            />
+          </div>
         </div>
       </el-col>
     </el-row>
+    <br>
     <el-row>
       <el-col align="center">
         <el-table
@@ -103,9 +114,14 @@
           fit
           highlight-current-row
         >
-          <el-table-column align="center" label="ID" width="80">
+          <el-table-column align="center" label="ID" width="50">
             <template slot-scope="scope">
-              {{ scope.$index }}
+              {{ scope.$index + 1 }}
+            </template>
+          </el-table-column>
+          <el-table-column label="Нэр" prop="customerName" sortable width="220" align="center">
+            <template slot-scope="scope">
+              {{ scope.row.customerName }}
             </template>
           </el-table-column>
           <el-table-column label="Өдөр" prop="date" sortable width="120" align="center">
@@ -126,26 +142,22 @@
           <el-table-column label="Төлөв" align="center" prop="isActive" sortable>
             <template slot-scope="scope">
               <el-tag
-                :type="scope.row.isActive ? 'success' : 'danger'"
+                :type="scope.row.isActive ? 'success' : 'info'"
                 disable-transitions
               >
                 {{ scope.row.isActive ? 'Идэвхтэй' : 'Идэвхгүй' }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="Танхим" align="center">
-            <template slot-scope="scope">
-              {{ roomFilter(scope.row.roomId) }}
-            </template>
-          </el-table-column>
           <el-table-column label="Үйлдэл" align="center">
             <template slot-scope="scope">
               <el-button
-                :loading="loading"
+                :loading="loadingByDate"
                 type="primary"
+                icon="el-icon-delete"
                 plain
-                @click="registerExit(scope.row)"
-              >Гарсан
+                @click="confirm(scope.row)"
+              >Устгах
               </el-button>
             </template>
           </el-table-column>
@@ -158,9 +170,12 @@
 <script>
 import moment from 'moment'
 import rooms from '@/assets/static/rooms.json'
-import { updateTimelogById, fetchTimelogByRoomId, fetchTimelogByDate } from '@/api/timelog'
+import { updateCustomerById, fetchCustomerById } from '@/api/user'
+import { updateTimelogById, fetchTimelogByRoomId, fetchTimelogRoomDateRange, deleteTimelog } from '@/api/timelog'
+const today = new Date()
+const beforeYesterday = new Date((new Date()).valueOf() - 1000 * 60 * 60 * 48)
 const ROOM_ID = 0 // Спорт заал
-const CAPACITY = 30
+const CAPACITY = rooms[ROOM_ID].max
 export default {
   data() {
     return {
@@ -168,34 +183,47 @@ export default {
       loading: false,
       listByDate: [],
       loadingByDate: false,
-      loadingButton: false,
       optionsRoom: rooms,
-      filterDate: new Date(),
+      dateRange: [beforeYesterday, today],
+      startDate: new Date(),
+      endDate: new Date(),
       percentage: 10,
       activeUsers: 0,
       capacity: CAPACITY,
       colors: [
-        { color: '#f56c6c', percentage: 20 },
-        { color: '#e6a23c', percentage: 40 },
+        { color: '#6f7ad3', percentage: 20 },
+        { color: '#1989fa', percentage: 40 },
         { color: '#5cb87a', percentage: 60 },
-        { color: '#1989fa', percentage: 80 },
-        { color: '#6f7ad3', percentage: 100 }
-      ]
+        { color: '#e6a23c', percentage: 80 },
+        { color: '#f56c6c', percentage: 100 }
+      ],
+      userInfo: {
+        courtTime: 0,
+        poolTime: 0,
+        fitnessTime: 0,
+        aeroTime: 0,
+        subTime: 0
+      }
     }
   },
   created() {
     this.fetchTimelogs()
+    this.fetchTimelogsByRange(beforeYesterday, today)
   },
   methods: {
-    fetchTimelogsByDate() {
+    rangePicked() {
+      this.fetchTimelogsByRange(this.dateRange[0], this.dateRange[1])
+    },
+    fetchTimelogsByRange(start, end) {
       return new Promise((resolve, reject) => {
-        fetchTimelogByDate({
+        fetchTimelogRoomDateRange({
           roomId: ROOM_ID,
-          entryDate: this.filterDate
+          start: start,
+          end: end
         }).then(response => {
-          console.log(response)
+          // console.log(response)
           this.loadingByDate = false
-          console.log('Response Date: ', response)
+          // console.log('Response Date: ', response)
           this.listByDate = response
           resolve()
         }).catch(error => {
@@ -213,9 +241,9 @@ export default {
         fetchTimelogByRoomId({
           roomId: ROOM_ID
         }).then(response => {
-          console.log(response)
+          // console.log(response)
           this.loading = false
-          console.log('Response: ', response)
+          // console.log('Response: ', response)
           this.list = response
           this.getActiveUsers(response)
           resolve()
@@ -238,7 +266,7 @@ export default {
           }
         })
       }
-      console.log('Active: ', this.activeUsers)
+      // console.log('Active: ', this.activeUsers)
       this.percentage = Math.ceil(this.activeUsers * 100 / CAPACITY)
     },
     registerExit(row) {
@@ -247,7 +275,28 @@ export default {
         cancelButtonText: 'Үгүй',
         type: 'warning'
       }).then(() => {
-        this.updateStatus(row)
+        return new Promise((resolve, reject) => {
+          console.log('Row: ', row)
+          fetchCustomerById({
+            customerId: row.customerId
+          }).then(response => {
+            console.log('Court time: ', response[0])
+            this.userInfo.courtTime = response[0].courtTime
+            this.userInfo.poolTime = response[0].poolTime
+            this.userInfo.fitnessTime = response[0].fitnessTime
+            this.userInfo.aeroTime = response[0].aeroTime
+            this.userInfo.subTime = response[0].subTime
+            this.updateStatus(row)
+            resolve()
+          }).catch(error => {
+            console.log(error)
+            this.timelogLoading = false
+            this.$message({
+              message: 'Таталт амжилтгүй.',
+              type: 'warning'
+            })
+          })
+        })
       }).catch(() => {
         this.$message({
           type: 'info',
@@ -263,12 +312,14 @@ export default {
           exitTime: new Date()
         }).then(response => {
           this.loading = false
-          console.log('Response: ', response)
+          // console.log('Response: ', response)
+          this.updateCustomerUsage(row)
           this.$message({
             message: 'Амжилттай хадгалав.',
             type: 'success'
           })
           this.fetchTimelogs()
+          this.fetchTimelogsByRange(this.dateRange[0], this.dateRange[1])
           this.list = response.data
           resolve()
         }).catch(error => {
@@ -276,6 +327,103 @@ export default {
           this.loading = false
           this.$message({
             message: 'Цагийн мэдээлэл амжилтгүй татагдлаа.',
+            type: 'warning'
+          })
+        })
+      })
+    },
+    updateCustomerUsage(timelog) {
+      console.log('Room: ', timelog)
+      let data = null
+      const entryTime = new Date(timelog.entryTime)
+      const exitTime = new Date(timelog.exitTime)
+      const hours = Math.abs(Math.round((exitTime.getTime() - entryTime.getTime()) / (1000 * 60 * 60)))
+      console.log('Хичээллэсэн цаг: ', hours)
+      switch (timelog.roomId) {
+        case this.optionsRoom[0].value:
+          data = {
+            id: timelog.customerId,
+            courtTime: this.userInfo.courtTime + hours
+          }
+          break
+        case this.optionsRoom[1].value:
+          data = {
+            id: timelog.customerId,
+            poolTime: this.userInfo.poolTime + hours
+          }
+          break
+        case this.optionsRoom[2].value:
+          data = {
+            id: timelog.customerId,
+            fitnessTime: this.userInfo.fitnessTime + hours
+          }
+          break
+        case this.optionsRoom[3].value:
+          data = {
+            id: timelog.customerId,
+            aeroTime: this.userInfo.aeroTime + hours
+          }
+          break
+        case this.optionsRoom[4].value:
+          data = {
+            id: timelog.customerId,
+            subTime: this.userInfo.subTime + hours
+          }
+          break
+        default:
+          break
+      }
+      return new Promise((resolve, reject) => {
+        updateCustomerById(data).then(response => {
+          console.log('Res: ', response)
+          this.$message({
+            message: 'Цагийн мэдээллийг амжилттай шинэчлэв.',
+            type: 'success'
+          })
+          resolve()
+        }).catch(error => {
+          console.log(error)
+          this.$message({
+            message: 'Шинэчлэх хүсэлт амжилтгүй боллоо.',
+            type: 'warning'
+          })
+        })
+      })
+    },
+    confirm(row) {
+      this.$alert('Та зөвшөөрч байна уу?', 'Зөвшөөрөл', {
+        confirmButtonText: 'Тийм',
+        cancelButtonText: 'Үгүй',
+        type: 'warning'
+      }).then(() => {
+        this.deleteTimelogById(row)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: 'Цуцлагдлаа'
+        })
+      })
+    },
+    deleteTimelogById(row) {
+      this.loadingByDate = true
+      // console.log('Timelog Id: ', row.id)
+      return new Promise((resolve, reject) => {
+        deleteTimelog({
+          id: row.id
+        }).then(response => {
+          this.loadingByDate = false
+          // console.log('Response: ', response)
+          this.$message({
+            message: 'Амжилттай устгав.',
+            type: 'success'
+          })
+          this.fetchTimelogsByRange(this.dateRange[0], this.dateRange[1])
+          resolve()
+        }).catch(error => {
+          console.log(error)
+          this.loadingByDate = false
+          this.$message({
+            message: 'Устгаж чадсангүй.',
             type: 'warning'
           })
         })

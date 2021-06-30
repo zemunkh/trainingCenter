@@ -15,6 +15,21 @@ module.exports = (sequelize, Sequelize) => {
         gender: {
             type: Sequelize.STRING
         },
+        courtTime: {
+            type: Sequelize.INTEGER
+        },
+        poolTime: {
+            type: Sequelize.INTEGER
+        },
+        fitnessTime: {
+            type: Sequelize.INTEGER
+        },
+        aeroTime: {
+            type: Sequelize.INTEGER
+        },
+        subTime: {
+            type: Sequelize.INTEGER
+        },
         email: {
             type: Sequelize.STRING
         },
