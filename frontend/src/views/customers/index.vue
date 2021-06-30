@@ -3,12 +3,31 @@
     <h2>Нийт үйлчлүүлэгчид</h2>
 
     <el-row>
-      <el-col :span="6">
+      <el-col :span="8">
         <el-input
           v-model="search"
-          size="mini"
+          size="large"
           placeholder="Нэрээр хайх"
+          style="width:80%;"
         />
+      </el-col>
+      <el-col :span="8">
+        <el-select
+          v-model="searchDepartment"
+          filterable
+          clearable
+          allow-create
+          placeholder="Аль салбар нэгж алба"
+          style="width:80%;"
+          @change="filterDeps(searchDepartment)"
+        >
+          <el-option
+            v-for="item in optionsDepartment"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          />
+        </el-select>
       </el-col>
     </el-row>
     <br>
@@ -122,7 +141,6 @@
                     :value="item.value"
                   />
                 </el-select>
-                <el-input v-model="userInfo.passportNumber" placeholder="9121200" style="width:60%;" @input="triggerExtractDate(userInfo.passportNumber)" />
               </el-form-item>
             </div>
           </el-col>
@@ -482,6 +500,8 @@ export default {
       },
       activeName: 'first',
       search: '',
+      searchDepartment: '',
+      loadedList: [],
       list: [],
       timelogList: [],
       isVisibleTimelog: false,
@@ -556,6 +576,11 @@ export default {
     this.fetchCustomers()
   },
   methods: {
+    filterDeps(value) {
+      console.log('Index of Deps', value)
+      this.list = this.loadedList
+      this.list = this.list.filter(data => !this.searchDepartment || data.department.includes(this.searchDepartment))
+    },
     onSave(userInfo) {
       this.$refs[userInfo].validate((valid) => {
         if (valid) {
@@ -887,6 +912,7 @@ export default {
       axios.get('/api/customers').then(
         response => {
           this.list = response.data
+          this.loadedList = response.data
           this.listLoading = false
         }).catch(error => {
         console.log('Error: ', error)

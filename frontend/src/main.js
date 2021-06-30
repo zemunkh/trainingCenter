@@ -3,6 +3,7 @@ import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import locale from 'element-ui/lib/locale/lang/en' // lang i18n
+import JsonCSV from 'vue-json-csv'
 import '@/styles/index.scss' // global css
 
 import App from './App'
@@ -25,7 +26,7 @@ if (process.env.NODE_ENV === 'production') {
   // const { mockXHR } = require('../mock')
   // mockXHR()
 }
-
+Vue.component('downloadCsv', JsonCSV)
 Vue.use(ElementUI, { locale })
 // Vue.use(axios)
 // Vue.prototype.$axios = axios

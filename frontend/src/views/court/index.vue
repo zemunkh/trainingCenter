@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <h1 align="center">Спорт заал</h1>
+    <h1 align="center">{{ roomName }}</h1>
 
     <el-row>
       <el-col align="center">
@@ -21,7 +21,7 @@
       <el-col align="center">
         <el-table
           v-loading="loading"
-          :data="list.filter(data => data.isActive === true)"
+          :data="list != null ? list.filter(data => data.isActive === true) : []"
           :default-sort="{prop: 'date', order: 'descending'}"
           stripe
           element-loading-text="Loading"
@@ -86,8 +86,13 @@
     <br>
     <el-row>
       <el-col align="center">
+        <h3>Өдөр сонгож хайх</h3>
+        <br>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span="12" align="left">
         <div class="block">
-          <h3>Өдөр сонгож хайх</h3>
           <div class="block">
             <el-date-picker
               v-model="dateRange"
@@ -99,6 +104,21 @@
             />
           </div>
         </div>
+      </el-col>
+      <el-col :span="12" align="right">
+        <el-button
+          type="info"
+          icon="el-icon-download"
+          plain
+          size="medium"
+          :disabled="downloadDisable"
+        >
+          <download-csv
+            :name="filename"
+            :data="generatedData"
+          >Татах
+          </download-csv>
+        </el-button>
       </el-col>
     </el-row>
     <br>
@@ -182,13 +202,18 @@ export default {
       list: [],
       loading: false,
       listByDate: [],
+      generatedData: [],
+      filename: '',
       loadingByDate: false,
+      loadingGenerate: false,
       optionsRoom: rooms,
       dateRange: [beforeYesterday, today],
       startDate: new Date(),
       endDate: new Date(),
+      downloadDisable: true,
       percentage: 10,
       activeUsers: 0,
+      roomName: rooms[ROOM_ID].label,
       capacity: CAPACITY,
       colors: [
         { color: '#6f7ad3', percentage: 20 },
@@ -211,8 +236,37 @@ export default {
     this.fetchTimelogsByRange(beforeYesterday, today)
   },
   methods: {
+    generateData() {
+      this.loadingGenerate = true
+      let data
+      let index = 0
+      if (this.listByDate.length > 0) {
+        this.downloadDisable = false
+        this.filename = `${this.displayDate(this.listByDate[0].entryTime)}-${rooms[ROOM_ID].label}.csv`
+        this.listByDate.forEach(element => {
+          index++
+          data = {
+            'Д/Д': index,
+            'ID': element.customerId,
+            'Нэр': element.customerName,
+            'Огноо': this.displayDate(element.entryTime),
+            'Орсон цаг': this.displayTime(element.entryTime),
+            'Гарсан цаг': this.displayTime(element.exitTime),
+            'Танхим': this.optionsRoom[element.roomId].label
+          }
+          this.generatedData.push(data)
+        })
+      } else {
+        this.downloadDisable = true
+      }
+      this.loadingGenerate = false
+    },
     rangePicked() {
-      this.fetchTimelogsByRange(this.dateRange[0], this.dateRange[1])
+      const start = this.dateRange[0]
+      const end = new Date(this.dateRange[1])
+      end.setHours(today.getHours(), today.getMinutes(), 0, 0)
+      // console.log('End: ', end)
+      this.fetchTimelogsByRange(start, end)
     },
     fetchTimelogsByRange(start, end) {
       return new Promise((resolve, reject) => {
@@ -225,6 +279,7 @@ export default {
           this.loadingByDate = false
           // console.log('Response Date: ', response)
           this.listByDate = response
+          this.generateData()
           resolve()
         }).catch(error => {
           console.log(error)
