@@ -126,7 +126,7 @@
       <el-col align="center">
         <el-table
           v-loading="loadingByDate"
-          :data="listByDate"
+          :data="pagedList"
           :default-sort="{prop: 'date', order: 'descending'}"
           stripe
           element-loading-text="Loading"
@@ -136,7 +136,7 @@
         >
           <el-table-column align="center" label="ID" width="50">
             <template slot-scope="scope">
-              {{ scope.$index + 1 }}
+              {{ ((page - 1) * pageSize) + scope.$index + 1 }}
             </template>
           </el-table-column>
           <el-table-column label="Нэр" prop="customerName" sortable width="220" align="center">
@@ -182,6 +182,12 @@
             </template>
           </el-table-column>
         </el-table>
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="listByDate.length"
+          @current-change="setPage"
+        />
       </el-col>
     </el-row>
   </div>
@@ -192,7 +198,7 @@ import moment from 'moment'
 import rooms from '@/assets/static/rooms.json'
 import { updateCustomerById, fetchCustomerById } from '@/api/user'
 import { updateTimelogById, fetchTimelogByRoomId, fetchTimelogRoomDateRange, deleteTimelog } from '@/api/timelog'
-const today = new Date()
+const today = new Date((new Date()).valueOf() + (8 * 60 * 60 * 1000))
 const beforeYesterday = new Date((new Date()).valueOf() - 1000 * 60 * 60 * 48)
 const ROOM_ID = 2 // Фитнесс
 const CAPACITY = rooms[ROOM_ID].max
@@ -202,6 +208,8 @@ export default {
       list: [],
       loading: false,
       listByDate: [],
+      page: 1,
+      pageSize: 25,
       generatedData: [],
       filename: '',
       loadingByDate: false,
@@ -231,11 +239,19 @@ export default {
       }
     }
   },
+  computed: {
+    pagedList() {
+      return this.listByDate.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
+    }
+  },
   created() {
     this.fetchTimelogs()
     this.fetchTimelogsByRange(beforeYesterday, today)
   },
   methods: {
+    setPage(val) {
+      this.page = val
+    },
     generateData() {
       this.loadingGenerate = true
       let data

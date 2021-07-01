@@ -61,6 +61,15 @@ export async function fetchTimelogRoomDateRange(data) {
   return await response.json()
 }
 
+export async function fetchTimelogsDateRange(data) {
+  const response = await fetch(`/api/timelogs/search/range`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  return await response.json()
+}
+
 export async function fetchActiveTimelogByRoom(data) {
   const response = await fetch(`/api/timelogs/search/room/active`, {
     method: 'POST',

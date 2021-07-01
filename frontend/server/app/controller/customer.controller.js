@@ -5,7 +5,7 @@ const Customer = db.customers;
 exports.create = (req, res) => {	
 	// Save to MySQL database
 	Customer.create({
-        customerId: req.body.customerId,  
+        passportId: req.body.passportId,  
 		firstname: req.body.firstname,
 		lastname: req.body.lastname,
 		gender: req.body.gender,
@@ -77,7 +77,7 @@ exports.update = (req, res) => {
 	const id = req.body.id;
 	console.log('They called me!!! ', id);
 	Customer.update( { 
-        customerId: req.body.customerId,  
+        passportId: req.body.passportId,  
 		firstname: req.body.firstname,
 		lastname: req.body.lastname,
 		gender: req.body.gender,

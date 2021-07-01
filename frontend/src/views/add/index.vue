@@ -368,13 +368,13 @@ export default {
       this.$refs[userInfo].validate((valid) => {
         if (valid) {
           this.loading = true
-          const customerId = `${this.userInfo.passportId.letter1 + this.userInfo.passportId.letter2 + this.userInfo.passportNumber.trim()}`
+          const passportId = `${this.userInfo.passportId.letter1 + this.userInfo.passportId.letter2 + this.userInfo.passportNumber.trim()}`
           this.$message('Хадгалж болно!')
           return new Promise((resolve, reject) => {
             createCustomer({
               firstname: this.userInfo.firstname.trim(),
               lastname: this.userInfo.lastname.trim(),
-              customerId: customerId,
+              passportId: passportId,
               gender: this.userInfo.gender,
               email: this.userInfo.email.trim(),
               birthdate: this.userInfo.birthdate,

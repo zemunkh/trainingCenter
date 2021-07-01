@@ -5,10 +5,11 @@
     <el-row>
       <el-col :span="8">
         <el-input
-          v-model="search"
+          v-model="searchName"
           size="large"
           placeholder="Нэрээр хайх"
           style="width:80%;"
+          @input="filterName(searchName)"
         />
       </el-col>
       <el-col :span="8">
@@ -32,10 +33,10 @@
     </el-row>
     <br>
     <el-row>
-      <el-col :span="24">
+      <el-col :span="24" align="center">
         <el-table
           v-loading="listLoading"
-          :data="list.filter(data => !search || data.firstname.toLowerCase().includes(search.toLowerCase()))"
+          :data="pagedList"
           stripe
           element-loading-text="Loading"
           border
@@ -44,7 +45,7 @@
         >
           <el-table-column align="center" label="ID" width="60">
             <template slot-scope="scope">
-              {{ scope.$index }}
+              {{ ((page - 1) * pageSize) + scope.$index + 1 }}
             </template>
           </el-table-column>
           <el-table-column label="Овог" prop="lastname" sortable width="80" align="center">
@@ -112,6 +113,13 @@
             </template>
           </el-table-column>
         </el-table>
+        <br>
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="list.length"
+          @current-change="setPage"
+        />
       </el-col>
     </el-row>
 
@@ -141,6 +149,7 @@
                     :value="item.value"
                   />
                 </el-select>
+                <el-input v-model="userInfo.passportNumber" placeholder="9121200" style="width:60%;" @input="triggerExtractDate(userInfo.passportNumber)" />
               </el-form-item>
             </div>
           </el-col>
@@ -499,9 +508,11 @@ export default {
         fields: []
       },
       activeName: 'first',
-      search: '',
+      searchName: '',
       searchDepartment: '',
       loadedList: [],
+      page: 1,
+      pageSize: 10,
       list: [],
       timelogList: [],
       isVisibleTimelog: false,
@@ -572,11 +583,27 @@ export default {
       letters: letters
     }
   },
+  computed: {
+    pagedList() {
+      return this.list.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
+    }
+  },
   created() {
     this.fetchCustomers()
   },
   methods: {
+    // list.filter(data => !search || data.firstname.toLowerCase().includes(search.toLowerCase()))
+    filterName(value) {
+      this.setPage(1)
+      console.log('Search name', value)
+      this.list = this.loadedList
+      this.list = this.list.filter(data => !this.searchName || data.firstname.toLowerCase().includes(this.searchName.toLowerCase()))
+    },
+    setPage(val) {
+      this.page = val
+    },
     filterDeps(value) {
+      this.setPage(1)
       console.log('Index of Deps', value)
       this.list = this.loadedList
       this.list = this.list.filter(data => !this.searchDepartment || data.department.includes(this.searchDepartment))
@@ -585,14 +612,14 @@ export default {
       this.$refs[userInfo].validate((valid) => {
         if (valid) {
           this.loading = true
-          const customerId = `${this.userInfo.passportId.letter1 + this.userInfo.passportId.letter2 + this.userInfo.passportNumber.trim()}`
+          const passportId = `${this.userInfo.passportId.letter1 + this.userInfo.passportId.letter2 + this.userInfo.passportNumber.trim()}`
           this.$message('Хадгалж болно!')
           return new Promise((resolve, reject) => {
             updateCustomerById({
               id: this.userInfo.id,
               firstname: this.userInfo.firstname.trim(),
               lastname: this.userInfo.lastname.trim(),
-              customerId: customerId,
+              passportId: passportId,
               gender: this.userInfo.gender,
               email: this.userInfo.email.trim(),
               birthdate: this.userInfo.birthdate,
@@ -791,12 +818,12 @@ export default {
       this.userInfo.phoneNumber = row.phoneNumber
       this.userInfo.testedDate = new Date(row.testedDate)
       this.userInfo.email = row.email
-      this.userInfo.passportId.letter1 = row.customerId[0]
-      this.userInfo.passportId.letter2 = row.customerId[1]
-      this.userInfo.passportNumber = row.customerId.substring(2, 10)
+      this.userInfo.passportId.letter1 = row.passportId[0]
+      this.userInfo.passportId.letter2 = row.passportId[1]
+      this.userInfo.passportNumber = row.passportId.substring(2, 10)
       this.userInfo.department = row.department
       this.userInfo.jobTitle = row.jobTitle
-      this.userInfo.birthdate = this.extractBirthdate(row.customerId)
+      this.userInfo.birthdate = this.extractBirthdate(row.passportId)
       this.userInfo.courtTime = row.courtTime
       this.userInfo.poolTime = row.poolTime
       this.userInfo.fitnessTime = row.fitnessTime

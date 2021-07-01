@@ -23,7 +23,7 @@ module.exports = function(app) {
     app.post('/api/timelogs/search/room/range', timelogs.findByRoomDateRange);
 
     // Retrieve Timelog by Date Range
-    // app.post('/api/timelogs/search/range', timelogs.findByDateRange);
+    app.post('/api/timelogs/search/range', timelogs.findByDateRange);
 
     // Retrieve Timelog roomId with Active list
     app.post('/api/timelogs/search/active', timelogs.findActive);

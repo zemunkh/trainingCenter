@@ -72,7 +72,22 @@
         </el-card>
       </el-col>
     </el-row>
-    <div class="dashboard-text">Username: {{ username }}</div>
+    <br>
+    <h1 align="center">7 хоногийн танхимийн үзүүлэлт</h1>
+    <br>
+    <el-row>
+      <el-col align="center">
+        <div class="chart-wrapper">
+          <bar-chart
+            :courtdata="courtData"
+            :pooldata="poolData"
+            :fitnessdata="fitnessData"
+            :aerodata="aeroData"
+            :subdata="subData"
+          />
+        </div>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
@@ -80,10 +95,18 @@
 import { mapGetters } from 'vuex'
 import rooms from '@/assets/static/rooms.json'
 import { fetchActiveTimelog } from '@/api/timelog'
+import BarChart from '../../components/Charts/BarChart.vue'
+
 export default {
   name: 'Dashboard',
+  components: { BarChart },
   data() {
     return {
+      courtData: [400, 52, 200, 334, 390, 330, 220],
+      poolData: [400, 52, 200, 334, 390, 330, 220],
+      fitnessData: [400, 52, 200, 334, 390, 330, 220],
+      aeroData: [20, 20, 20, 20, 20, 20, 20],
+      subData: [40, 40, 40, 40, 40, 40, 40],
       percentage_court: 10,
       activeUsers_court: 0,
       capacity_court: rooms[0].max,
@@ -111,7 +134,8 @@ export default {
         { color: '#5cb87a', percentage: 60 },
         { color: '#e6a23c', percentage: 80 },
         { color: '#f56c6c', percentage: 100 }
-      ]
+      ],
+      loadingByDate: false
     }
   },
   computed: {
@@ -128,7 +152,7 @@ export default {
       return new Promise((resolve, reject) => {
         fetchActiveTimelog().then(response => {
           this.loading = false
-          console.log('Len: ', response.length)
+          // console.log('Len: ', response.length)
           this.setActiveUsers(response)
           resolve()
         }).catch(error => {
