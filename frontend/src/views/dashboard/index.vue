@@ -79,11 +79,7 @@
       <el-col align="center">
         <div class="chart-wrapper">
           <bar-chart
-            :courtdata="courtData"
-            :pooldata="poolData"
-            :fitnessdata="fitnessData"
-            :aerodata="aeroData"
-            :subdata="subData"
+            :chartdata="chartData"
           />
         </div>
       </el-col>
@@ -94,19 +90,18 @@
 <script>
 import { mapGetters } from 'vuex'
 import rooms from '@/assets/static/rooms.json'
-import { fetchActiveTimelog } from '@/api/timelog'
+import weeks from '@/assets/static/weeks.json'
+import { fetchActiveTimelog, fetchTimelogRoomDateRange } from '@/api/timelog'
 import BarChart from '../../components/Charts/BarChart.vue'
+
+const today = new Date((new Date()).valueOf() + (8 * 60 * 60 * 1000))
+const weekAgo = new Date((new Date()).valueOf() - 1000 * 60 * 60 * 168)
 
 export default {
   name: 'Dashboard',
   components: { BarChart },
   data() {
     return {
-      courtData: [400, 52, 200, 334, 390, 330, 220],
-      poolData: [400, 52, 200, 334, 390, 330, 220],
-      fitnessData: [400, 52, 200, 334, 390, 330, 220],
-      aeroData: [20, 20, 20, 20, 20, 20, 20],
-      subData: [40, 40, 40, 40, 40, 40, 40],
       percentage_court: 10,
       activeUsers_court: 0,
       capacity_court: rooms[0].max,
@@ -135,7 +130,14 @@ export default {
         { color: '#e6a23c', percentage: 80 },
         { color: '#f56c6c', percentage: 100 }
       ],
-      loadingByDate: false
+      loadingByDate: false,
+      chartData: [
+        [5, 4, 3, 3, 4, 5, 6],
+        [5, 4, 3, 3, 4, 5, 6],
+        [5, 4, 3, 3, 4, 5, 6],
+        [5, 4, 3, 3, 4, 5, 6],
+        [5, 4, 3, 3, 4, 5, 6]
+      ]
     }
   },
   computed: {
@@ -145,8 +147,73 @@ export default {
   },
   created() {
     this.fetchTimelogs()
+    this.fetchTimelogsByRoomsWeekly()
   },
   methods: {
+    fetchTimelogsByRoomsWeekly() {
+      const weekIndex = this.getIndexWeekdays()
+      this.chartData = []
+      rooms.forEach((room, index) => {
+        // console.log('Room name: ', room.label)
+        this.fetchTimelogsByRange(weekAgo, today, room.value, weekIndex)
+      })
+    },
+    fetchTimelogsByRange(start, end, roomId, weekIndex) {
+      return new Promise((resolve, reject) => {
+        fetchTimelogRoomDateRange({
+          roomId: roomId,
+          start: start,
+          end: end
+        }).then(response => {
+          // console.log(response)
+          // Add to each room array
+          let entryDate
+          const weeklyCount = [0, 0, 0, 0, 0, 0, 0]
+          console.log('Response: %s, Room: %s', response.length, rooms[roomId].label)
+          if (response.length === 0) {
+            console.log('Empty room, ', rooms[roomId].label)
+            this.chartData[roomId] = weeklyCount
+            return weeklyCount
+          }
+          response.forEach(log => {
+            // console.log('Log: ', new Date(log.entryTime))
+            entryDate = new Date(log.entryTime)
+            switch (entryDate.getDay()) {
+              case weekIndex[0]:
+                weeklyCount[6]++
+                break
+              case weekIndex[1]:
+                weeklyCount[5]++
+                break
+              case weekIndex[2]:
+                weeklyCount[4]++
+                break
+              case weekIndex[3]:
+                weeklyCount[3]++
+                break
+              case weekIndex[4]:
+                weeklyCount[2]++
+                break
+              case weekIndex[5]:
+                weeklyCount[1]++
+                break
+              case weekIndex[6]:
+                weeklyCount[0]++
+                break
+              default:
+                break
+            }
+            // console.log('Sum ', weeklyCount)
+            this.chartData[roomId] = weeklyCount
+            return weeklyCount
+          })
+          resolve()
+        }).catch(error => {
+          console.log(error)
+          return [0, 0, 0, 0, 0, 0, 0]
+        })
+      })
+    },
     fetchTimelogs() {
       this.loading = true
       return new Promise((resolve, reject) => {
@@ -194,6 +261,17 @@ export default {
       this.percentage_fitness = Math.ceil(this.activeUsers_fitness * 100 / this.capacity_fitness)
       this.percentage_aero = Math.ceil(this.activeUsers_aero * 100 / this.capacity_aero)
       this.percentage_sub = Math.ceil(this.activeUsers_sub * 100 / this.capacity_sub)
+    },
+    getIndexWeekdays() {
+      const weekDays = [0, 1, 2, 3, 4, 5, 6]
+      const days = weekDays
+      weeks.forEach((day, index) => {
+        // console.log('Day1: %s Day2: %s', weeks[today.getDay()].label, weekDays[index])
+        if (today.getDay() !== weekDays[0]) {
+          days.push(days.shift())
+        }
+      })
+      return days
     }
   }
 }
