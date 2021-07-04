@@ -3,12 +3,13 @@
 </template>
 
 <script>
-import echarts from 'echarts'
+import * as echarts from 'echarts'
 require('echarts/theme/macarons') // echarts theme
 import rooms from '@/assets/static/rooms.json'
 import weeks from '@/assets/static/weeks.json'
 // import resize from './mixins/resize'
-const today = new Date((new Date()).valueOf() + (8 * 60 * 60 * 1000))
+// const today = new Date((new Date()).valueOf() + (8 * 60 * 60 * 1000))
+const todayLocal = new Date()
 export default {
   props: {
     chartdata: {
@@ -21,11 +22,11 @@ export default {
     },
     width: {
       type: String,
-      default: '80%'
+      default: '60%'
     },
     height: {
       type: String,
-      default: '450px'
+      default: '600px'
     }
   },
   data() {
@@ -68,6 +69,9 @@ export default {
             type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
           }
         },
+        legend: {
+          data: [rooms[0].label, rooms[1].label, rooms[2].label, rooms[3].label, rooms[4].label]
+        },
         grid: {
           top: 10,
           left: '2%',
@@ -85,52 +89,83 @@ export default {
         yAxis: [{
           type: 'value',
           axisTick: {
-            show: false
+            show: true
           }
         }],
         series: [{
           name: rooms[0].label,
           type: 'bar',
-          stack: 'vistors',
+          stack: 'total',
+          label: {
+            show: true
+          },
+          emphasis: {
+            focus: 'series'
+          },
           barWidth: '60%',
           data: data[0]
         }, {
           name: rooms[1].label,
           type: 'bar',
-          stack: 'vistors',
+          stack: 'total',
+          label: {
+            show: true
+          },
+          emphasis: {
+            focus: 'series'
+          },
           barWidth: '60%',
           data: data[1]
         }, {
           name: rooms[2].label,
           type: 'bar',
-          stack: 'vistors',
+          stack: 'total',
+          label: {
+            show: true
+          },
+          emphasis: {
+            focus: 'series'
+          },
           barWidth: '60%',
           data: data[2]
         }, {
           name: rooms[3].label,
           type: 'bar',
-          stack: 'vistors',
+          stack: 'total',
+          label: {
+            show: true
+          },
+          emphasis: {
+            focus: 'series'
+          },
           barWidth: '60%',
           data: data[3]
         }, {
           name: rooms[4].label,
           type: 'bar',
-          stack: 'vistors',
+          stack: 'total',
+          label: {
+            show: true
+          },
+          emphasis: {
+            focus: 'series'
+          },
           barWidth: '60%',
           data: data[4]
         }]
       })
     },
     setWeekDates() {
-      const weekDays = ['Дав', 'Мяг', 'Лхг', 'Пүр', 'Баа', 'Бям', 'Ням']
+      const weekDays = ['Ням', 'Дав', 'Мяг', 'Лха', 'Пүр', 'Баа', 'Бям']
       const days = weekDays
-      // console.log('Label: ', weeks[today.getDay()].label)
+      // console.log('Label: ', weeks[todayLocal.getDay()].label)
       weeks.forEach((day, index) => {
-        // console.log('Day1: %s Day2: %s', weeks[today.getDay()].label, weekDays[index])
-        if (weeks[today.getDay()].label !== weekDays[6]) {
+        // console.log('Day1: %s Day2: %s', weeks[todayLocal.getDay()].label, weekDays[index])
+        if (weeks[todayLocal.getDay()].label !== weekDays[6]) {
           days.push(days.shift())
         }
       })
+      // console.log('RESULT: ', days)
       return days
     }
   }

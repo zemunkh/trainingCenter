@@ -95,6 +95,7 @@ import { fetchActiveTimelog, fetchTimelogRoomDateRange } from '@/api/timelog'
 import BarChart from '../../components/Charts/BarChart.vue'
 
 const today = new Date((new Date()).valueOf() + (8 * 60 * 60 * 1000))
+const todayLocal = new Date()
 const weekAgo = new Date((new Date()).valueOf() - 1000 * 60 * 60 * 168)
 
 export default {
@@ -169,7 +170,7 @@ export default {
           // Add to each room array
           let entryDate
           const weeklyCount = [0, 0, 0, 0, 0, 0, 0]
-          console.log('Response: %s, Room: %s', response.length, rooms[roomId].label)
+          // console.log('Response: %s, Room: %s', response.length, rooms[roomId].label)
           if (response.length === 0) {
             console.log('Empty room, ', rooms[roomId].label)
             this.chartData[roomId] = weeklyCount
@@ -180,25 +181,25 @@ export default {
             entryDate = new Date(log.entryTime)
             switch (entryDate.getDay()) {
               case weekIndex[0]:
-                weeklyCount[6]++
+                weeklyCount[0]++
                 break
               case weekIndex[1]:
-                weeklyCount[5]++
+                weeklyCount[1]++
                 break
               case weekIndex[2]:
-                weeklyCount[4]++
+                weeklyCount[2]++
                 break
               case weekIndex[3]:
                 weeklyCount[3]++
                 break
               case weekIndex[4]:
-                weeklyCount[2]++
+                weeklyCount[4]++
                 break
               case weekIndex[5]:
-                weeklyCount[1]++
+                weeklyCount[5]++
                 break
               case weekIndex[6]:
-                weeklyCount[0]++
+                weeklyCount[6]++
                 break
               default:
                 break
@@ -267,10 +268,11 @@ export default {
       const days = weekDays
       weeks.forEach((day, index) => {
         // console.log('Day1: %s Day2: %s', weeks[today.getDay()].label, weekDays[index])
-        if (today.getDay() !== weekDays[0]) {
+        if (todayLocal.getDay() !== weekDays[6]) {
           days.push(days.shift())
         }
       })
+      // console.log('RESULT: ', days)
       return days
     }
   }
