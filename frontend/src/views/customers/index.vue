@@ -76,7 +76,7 @@
           <el-table-column label="Шинжилгээ хүчинтэй огноо" width="150" align="center">
             <template slot-scope="scope">
               <el-tag
-                :type="dateCheck(scope.row.testedDate) ? 'success' : 'danger'"
+                :type="dateCheck(scope.row.testedDate) ? (dateCheckWarning(scope.row.testedDate) ? 'success' : 'warning') : 'danger'"
                 disable-transitions
               >
                 {{ displayDate(scope.row.testedDate) }}
@@ -1026,6 +1026,18 @@ export default {
       const d = new Date()
       const to = new Date().getTime()
       const from = d.setMonth(d.getMonth() - 3)
+      // console.log('Converted to: ', new Date(to))
+      // console.log('Converted from: ', new Date(from))
+      // console.log('Tested date: ', testDate)
+      if (testDate.getTime() >= from && testDate.getTime() <= to) {
+        return true
+      } else return false
+    },
+    dateCheckWarning: function(date) {
+      const testDate = new Date(date)
+      const d = new Date()
+      const to = new Date().getTime()
+      const from = d.setDate(d.getDate() - 82)
       // console.log('Converted to: ', new Date(to))
       // console.log('Converted from: ', new Date(from))
       // console.log('Tested date: ', testDate)
