@@ -12,11 +12,11 @@ const env = {
     }
 };
 
-const env_production = {
+const env_prod = {
     database: 'sportcomplex',
     username: 'root',
     password: 'Local99#',
-    host: '10.1.3.71',
+    host: '10.1.3.59',
     dialect: 'mysql',
     pool: {
         max: 5,

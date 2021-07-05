@@ -8,12 +8,14 @@
           <div slot="header" class="clearfix">
             <span><b>{{ optionsRoom[0].label.toUpperCase() }}</b></span>
           </div>
-          <el-progress
-            type="dashboard"
-            :percentage="percentage_court"
-            :color="colors"
-          />
-          <h4 align="center">{{ `${activeUsers_court}/${capacity_court}` }}</h4>
+          <router-link :to="{ path: '/court/index' }">
+            <el-progress
+              type="dashboard"
+              :percentage="percentage_court"
+              :color="colors"
+            />
+            <h4 align="center">{{ `${activeUsers_court}/${capacity_court}` }}</h4>
+          </router-link>
         </el-card>
       </el-col>
       <el-col :span="8" align="center">
@@ -21,12 +23,14 @@
           <div slot="header" class="clearfix">
             <span><b>{{ optionsRoom[1].label.toUpperCase() }}</b></span>
           </div>
-          <el-progress
-            type="dashboard"
-            :percentage="percentage_pool"
-            :color="colors"
-          />
-          <h4 align="center">{{ `${activeUsers_pool}/${capacity_pool}` }}</h4>
+          <router-link :to="{ path: '/pool/index' }">
+            <el-progress
+              type="dashboard"
+              :percentage="percentage_pool"
+              :color="colors"
+            />
+            <h4 align="center">{{ `${activeUsers_pool}/${capacity_pool}` }}</h4>
+          </router-link>
         </el-card>
       </el-col>
       <el-col :span="8" align="center">
@@ -34,12 +38,14 @@
           <div slot="header" class="clearfix">
             <span><b>{{ optionsRoom[2].label.toUpperCase() }}</b></span>
           </div>
-          <el-progress
-            type="dashboard"
-            :percentage="percentage_fitness"
-            :color="colors"
-          />
-          <h4 align="center">{{ `${activeUsers_fitness}/${capacity_fitness}` }}</h4>
+          <router-link :to="{ path: '/fitness/index' }">
+            <el-progress
+              type="dashboard"
+              :percentage="percentage_fitness"
+              :color="colors"
+            />
+            <h4 align="center">{{ `${activeUsers_fitness}/${capacity_fitness}` }}</h4>
+          </router-link>
         </el-card>
       </el-col>
     </el-row>
@@ -50,12 +56,14 @@
           <div slot="header" class="clearfix">
             <span><b>{{ optionsRoom[3].label.toUpperCase() }}</b></span>
           </div>
-          <el-progress
-            type="dashboard"
-            :percentage="percentage_aero"
-            :color="colors"
-          />
-          <h4 align="center">{{ `${activeUsers_aero}/${capacity_aero}` }}</h4>
+          <router-link :to="{ path: '/yoga/index' }">
+            <el-progress
+              type="dashboard"
+              :percentage="percentage_aero"
+              :color="colors"
+            />
+            <h4 align="center">{{ `${activeUsers_aero}/${capacity_aero}` }}</h4>
+          </router-link>
         </el-card>
       </el-col>
       <el-col :span="12" align="center">
@@ -63,12 +71,14 @@
           <div slot="header" class="clearfix">
             <span><b>{{ optionsRoom[4].label.toUpperCase() }}</b></span>
           </div>
-          <el-progress
-            type="dashboard"
-            :percentage="percentage_sub"
-            :color="colors"
-          />
-          <h4 align="center">{{ `${activeUsers_sub}/${capacity_sub}` }}</h4>
+          <router-link :to="{ path: '/sub-court/index' }">
+            <el-progress
+              type="dashboard"
+              :percentage="percentage_sub"
+              :color="colors"
+            />
+            <h4 align="center">{{ `${activeUsers_sub}/${capacity_sub}` }}</h4>
+          </router-link>
         </el-card>
       </el-col>
     </el-row>
